@@ -1,0 +1,9 @@
+# tididi is not on PyPI: build it into this environment from the tididi repo (see README).
+maturin>=1.9.4,<2
+torch
+numpy
+scikit-learn
+matplotlib
+problog
+deepproblog
+jupyterlab
