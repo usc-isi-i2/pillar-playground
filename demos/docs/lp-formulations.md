@@ -26,8 +26,8 @@ files. The Python port in `demos/backend/src/pillar_demos/` builds the same LPs 
 `replan.py`) and solves them with the same simplex (`lp.py`).
 
 Both demos use one solver, `solveLP` (Copilot line 55, Replan line 258): a dense two-phase simplex
-that minimises $c^\top x$ subject to rows of the form $a^\top x \;\{\le, \ge, =\}\; b$ and
-$x \ge 0$. Phase 1 minimises the sum of artificial variables; phase 2 the real objective. It
+that minimises $`c^\top x`$ subject to rows of the form $`a^\top x \;\{\le, \ge, =\}\; b`$ and
+$`x \ge 0`$. Phase 1 minimises the sum of artificial variables; phase 2 the real objective. It
 pivots on the most negative reduced cost, switches to Bland's rule after 50 degenerate pivots,
 and breaks ratio-test ties by the lower basis index. When an LP has several optimal vertices,
 these rules decide which plan the page shows.
@@ -60,72 +60,72 @@ cheapest plan that reaches τ.
 
 | Symbol | Meaning | Value |
 |---|---|---|
-| Sites $j$ | S1, S2, S3, S4 (S1 and S4 are priority sites) | $j = 1..4$ |
-| Worlds $w$ | Normal, Surge, Storm | $w = 1..3$ |
-| $c^A_j$, $c^B_j$ | Transport cost per unit from depot A, B | $c^A = (1,2,5,6)$, $c^B = (6,5,2,1)$ |
-| $c^L$ | Local backup cost per unit (S4 only) | `backupCost`, default 12 |
-| $K_A$, $K_B$ | Depot dispatch limits | `capacityA` 130, `capacityB` 50 |
-| $\bar L$ | Backup limit | `backupLimit` (30) if backup enabled, else 0 |
-| $F_j$ | Original forecast | $(50, 40, 45, 55)$ |
-| $d_{wj}$ | Realised demand | $50, 40, 45$ for S1–S3 in every world; S4: $60, 70, 80$ |
-| $\phi$ | Forecast floor fraction | `floor`, 0.6 |
-| $\alpha$ | Priority service level | `exceptionService` (0.8) if `exceptionAuthorized`, else `service` (0.9) |
-| $\tau$ | Required probability that the priority rule holds | `tau`, 0.95 |
-| $\rho_j$ | Shortage penalty | `penaltyPriority` (20) for S1, S4; `penaltyOther` (10) for S2, S3 |
-| $\delta_w$ | 1 if A→S4 arrives in time in world $w$ | 0 only for Storm in the `storm` scenario |
-| $\pi_w$ | Posterior world probability | below |
+| Sites $`j`$ | S1, S2, S3, S4 (S1 and S4 are priority sites) | $`j = 1..4`$ |
+| Worlds $`w`$ | Normal, Surge, Storm | $`w = 1..3`$ |
+| $`c^A_j`$, $`c^B_j`$ | Transport cost per unit from depot A, B | $`c^A = (1,2,5,6)`$, $`c^B = (6,5,2,1)`$ |
+| $`c^L`$ | Local backup cost per unit (S4 only) | `backupCost`, default 12 |
+| $`K_A`$, $`K_B`$ | Depot dispatch limits | `capacityA` 130, `capacityB` 50 |
+| $`\bar L`$ | Backup limit | `backupLimit` (30) if backup enabled, else 0 |
+| $`F_j`$ | Original forecast | $`(50, 40, 45, 55)`$ |
+| $`d_{wj}`$ | Realised demand | $`50, 40, 45`$ for S1–S3 in every world; S4: $`60, 70, 80`$ |
+| $`\phi`$ | Forecast floor fraction | `floor`, 0.6 |
+| $`\alpha`$ | Priority service level | `exceptionService` (0.8) if `exceptionAuthorized`, else `service` (0.9) |
+| $`\tau`$ | Required probability that the priority rule holds | `tau`, 0.95 |
+| $`\rho_j`$ | Shortage penalty | `penaltyPriority` (20) for S1, S4; `penaltyOther` (10) for S2, S3 |
+| $`\delta_w`$ | 1 if A→S4 arrives in time in world $`w`$ | 0 only for Storm in the `storm` scenario |
+| $`\pi_w`$ | Posterior world probability | below |
 
-**World probabilities.** With storm probability $q$ (`stormProbability`, 0.3), the priors are
-$\big((1-q)\tfrac{0.15}{0.7},\ (1-q)\tfrac{0.55}{0.7},\ q\big)$. Observed evidence (`evidence` =
-Normal, Surge or Storm) zeroes the other worlds; the result is renormalised to $\pi_w$.
+**World probabilities.** With storm probability $`q`$ (`stormProbability`, 0.3), the priors are
+$`\big((1-q)\tfrac{0.15}{0.7},\ (1-q)\tfrac{0.55}{0.7},\ q\big)`$. Observed evidence (`evidence` =
+Normal, Surge or Storm) zeroes the other worlds; the result is renormalised to $`\pi_w`$.
 
 ### Variables (21)
 
-- $x^A_j, x^B_j \ge 0$: units sent from depot A and B to site $j$ (8 variables);
-- $x^L \ge 0$: local backup units to S4;
-- $s_{wj} \ge 0$: shortage at site $j$ in world $w$ (12 variables).
+- $`x^A_j, x^B_j \ge 0`$: units sent from depot A and B to site $`j`$ (8 variables);
+- $`x^L \ge 0`$: local backup units to S4;
+- $`s_{wj} \ge 0`$: shortage at site $`j`$ in world $`w`$ (12 variables).
 
-Units that reach site $j$ in world $w$:
+Units that reach site $`j`$ in world $`w`$:
 
-$$
+```math
 y_{wj} = x^A_j + x^B_j \quad (j = 1,2,3), \qquad
 y_{w4} = \delta_w\, x^A_4 + x^B_4 + x^L .
-$$
+```
 
 A late A→S4 shipment still costs transport but delivers nothing in that world.
 
-### The LP for a subset $S \subseteq \{\text{Normal}, \text{Surge}, \text{Storm}\}$
+### The LP for a subset $`S \subseteq \{\text{Normal}, \text{Surge}, \text{Storm}\}`$
 
-$$
+```math
 \begin{aligned}
 \min\quad & \sum_j \big(c^A_j x^A_j + c^B_j x^B_j\big) + c^L x^L
   + \sum_w \pi_w \sum_j \rho_j\, s_{wj} \\
 \text{s.t.}\quad
 & \textstyle\sum_j x^A_j \le K_A, \qquad \sum_j x^B_j \le K_B, \qquad x^L \le \bar L
   && \text{(capacity)} \\
-& y_{wj} \ge \phi\, F_j && \forall w \text{ with } \pi_w > 0,\ \forall j \quad \text{(floors)} \\
+& y_{wj} \ge \phi\, F_j && \forall w \text{ with } \pi_w \gt  0,\ \forall j \quad \text{(floors)} \\
 & y_{wj} + s_{wj} \ge d_{wj} && \forall w, j \quad \text{(shortage)} \\
-& y_{w1} \ge \alpha \cdot 50, \qquad y_{w4} \ge \alpha\, d_{w4} && \forall w \in S \text{ with } \pi_w > 0
+& y_{w1} \ge \alpha \cdot 50, \qquad y_{w4} \ge \alpha\, d_{w4} && \forall w \in S \text{ with } \pi_w \gt  0
   \quad \text{(priority rule)} \\
 & x, s \ge 0 .
 \end{aligned}
-$$
+```
 
 The objective is transport plus backup cost plus expected shortage penalty. At an optimum
-$s_{wj} = \max(0, d_{wj} - y_{wj})$.
+$`s_{wj} = \max(0, d_{wj} - y_{wj})`$.
 
 ### The chance constraint, solved by enumeration
 
-The policy asks for $P(\text{priority rule holds}) \ge \tau$, where the rule holds in world $w$
-when $y_{w1} \ge 50\alpha$ and $y_{w4} \ge \alpha d_{w4}$. The page does not use binaries. It
-solves the LP once for each of the $2^3 = 8$ subsets $S$ (bit $w$ of `mask`), then for each
+The policy asks for $`P(\text{priority rule holds}) \ge \tau`$, where the rule holds in world $`w`$
+when $`y_{w1} \ge 50\alpha`$ and $`y_{w4} \ge \alpha d_{w4}`$. The page does not use binaries. It
+solves the LP once for each of the $`2^3 = 8`$ subsets $`S`$ (bit $`w`$ of `mask`), then for each
 optimal plan:
 
 1. scores it (`score`): it must respect capacities and floors, and its probability is
-   $\sum_w \pi_w \cdot \mathbb 1[\text{rule holds in } w]$, evaluated by the compiled arithmetic
-   circuit, with a $10^{-7}$ tolerance;
-2. keeps it if that probability is at least $\tau - 10^{-7}$;
-3. picks the cheapest kept plan, replacing the incumbent only when cheaper by more than $10^{-6}$
+   $`\sum_w \pi_w \cdot \mathbb 1[\text{rule holds in } w]`$, evaluated by the compiled arithmetic
+   circuit, with a $`10^{-7}`$ tolerance;
+2. keeps it if that probability is at least $`\tau - 10^{-7}`$;
+3. picks the cheapest kept plan, replacing the incumbent only when cheaper by more than $`10^{-6}`$
    (so the first subset wins ties).
 
 Enumerating every subset makes this an exact solution of the chance-constrained problem. If no
@@ -133,30 +133,30 @@ subset qualifies the page reports the problem infeasible, together with the high
 any hard-feasible plan reached.
 
 **Equivalent MILP.** The same problem as one mixed-integer program: drop the subset, add a binary
-$v_w$ per world that switches off that world's priority rows, and bound the probability of the
+$`v_w`$ per world that switches off that world's priority rows, and bound the probability of the
 switched-off worlds:
 
-$$
+```math
 \begin{aligned}
 & y_{w1} + 50\alpha\, v_w \ge 50\alpha, \qquad y_{w4} + \alpha d_{w4}\, v_w \ge \alpha d_{w4}
   && \forall w \\
 & \textstyle\sum_w \pi_w v_w \le 1 - \tau, \qquad v_w \in \{0, 1\} .
 \end{aligned}
-$$
+```
 
-The big-M is the threshold itself, which is valid because $y \ge 0$. $v_w = 1$ permits a
-violation in $w$; it does not assert one. The optimum equals the best subset LP's. The plan can
+The big-M is the threshold itself, which is valid because $`y \ge 0`$. $`v_w = 1`$ permits a
+violation in $`w`$; it does not assert one. The optimum equals the best subset LP's. The plan can
 differ when several plans tie, because the page keeps the first subset that reaches the minimum.
-The page also applies floors and priority rows only in worlds with $\pi_w > 0$, which matters
+The page also applies floors and priority rows only in worlds with $`\pi_w \gt  0`$, which matters
 once evidence has ruled a world out.
 
 ### Derived queries
 
 - **Most-likely-world plan**: the same procedure with the evidence set to the most probable
-  world, so $\pi$ is a point mass, then scored under the real $\pi$.
-- **Minimum backup** (`minimumBackup`): enable backup and bisect $\bar L$ on $[0, 100]$ for 32
+  world, so $`\pi`$ is a point mass, then scored under the real $`\pi`$.
+- **Minimum backup** (`minimumBackup`): enable backup and bisect $`\bar L`$ on $`[0, 100]`$ for 32
   steps, solving the full enumeration at each step. The answer is the smallest limit with a
-  feasible plan, rounded to $10^{-5}$. In the storm scenario at $\tau = 0.95$ it is 21.99999,
+  feasible plan, rounded to $`10^{-5}`$. In the storm scenario at $`\tau = 0.95`$ it is 21.99999,
   shown as 22 units.
 - **Independence test**: no LP. A fixed plan is scored twice, once with the storm linking high
   demand and late delivery, and once treating them as independent (70% vs 91%).
@@ -180,52 +180,52 @@ and the page reports them as "relaxed".
 
 | Symbol | Meaning |
 |---|---|
-| DCs $d$ | Toy: A, B. Storm: one DC per state (CA, TX, WI) |
-| Keys $k = (s, c)$ | Store $s$ and category $c$. Toy: S1–S4 with one category `units`. Storm: 10 stores × FOODS, HOUSEHOLD, HOBBIES = 30 keys |
-| Lanes $\ell = (d, s)$ | Toy: every DC to every store. Storm: every DC to every store, minus CA→TX when that lane is closed |
-| $\kappa_\ell$ | Lane cost per unit. Toy: A $(1,2,5,6)$, B $(6,5,2,1)$. Storm: in-state 1; cross-state CA–TX 4, CA–WI 6, TX–WI 4.5, each scaled by $m/4$ where $m$ = `crossStateMultiplier` (default 4) |
-| $K_d$ | DC capacity. Toy: 130, 50. Storm: $\operatorname{round}(1.35 \cdot \sum_{\text{state}} \text{base mean})$, times `txCap` (1, 0.7 or 0.4) for TX |
-| $F_k$ | Normal-week forecast. Toy: 50, 40, 45, 55. Storm: $\operatorname{round}(\text{weekly}_s \cdot \text{share}_c)$, FOODS × 1.06 in a SNAP week. A loaded CSV of M5 aggregates replaces $\text{weekly}_s \cdot \text{share}_c$ (and the cv) for the keys it lists |
-| $\phi$ | Floor fraction (`floor.fraction`, 0.6), or 0 if no floor |
-| $P$, $f_k$ | Priority keys and their service fractions. Toy: S1, S4 at 0.9. Storm: TX_1–TX_3 FOODS at 0.9 |
-| $\rho_k$ | Shortage penalty: `penalties.priority` for $k \in P$, `penalties.other` otherwise |
-| $\tau$ | Required probability that the priority rule holds; `joint` = all priority keys together |
+| DCs $`d`$ | Toy: A, B. Storm: one DC per state (CA, TX, WI) |
+| Keys $`k = (s, c)`$ | Store $`s`$ and category $`c`$. Toy: S1–S4 with one category `units`. Storm: 10 stores × FOODS, HOUSEHOLD, HOBBIES = 30 keys |
+| Lanes $`\ell = (d, s)`$ | Toy: every DC to every store. Storm: every DC to every store, minus CA→TX when that lane is closed |
+| $`\kappa_\ell`$ | Lane cost per unit. Toy: A $`(1,2,5,6)`$, B $`(6,5,2,1)`$. Storm: in-state 1; cross-state CA–TX 4, CA–WI 6, TX–WI 4.5, each scaled by $`m/4`$ where $`m`$ = `crossStateMultiplier` (default 4) |
+| $`K_d`$ | DC capacity. Toy: 130, 50. Storm: $`\operatorname{round}(1.35 \cdot \sum_{\text{state}} \text{base mean})`$, times `txCap` (1, 0.7 or 0.4) for TX |
+| $`F_k`$ | Normal-week forecast. Toy: 50, 40, 45, 55. Storm: $`\operatorname{round}(\text{weekly}_s \cdot \text{share}_c)`$, FOODS × 1.06 in a SNAP week. A loaded CSV of M5 aggregates replaces $`\text{weekly}_s \cdot \text{share}_c`$ (and the cv) for the keys it lists |
+| $`\phi`$ | Floor fraction (`floor.fraction`, 0.6), or 0 if no floor |
+| $`P`$, $`f_k`$ | Priority keys and their service fractions. Toy: S1, S4 at 0.9. Storm: TX_1–TX_3 FOODS at 0.9 |
+| $`\rho_k`$ | Shortage penalty: `penalties.priority` for $`k \in P`$, `penalties.other` otherwise |
+| $`\tau`$ | Required probability that the priority rule holds; `joint` = all priority keys together |
 
 ### Demand model
 
-Demand comes from a mixture over latent configurations $\kappa$ with posterior weights $w_\kappa$.
+Demand comes from a mixture over latent configurations $`\kappa`$ with posterior weights $`w_\kappa`$.
 Within a configuration, keys are independent.
 
 - **Toy**: one configuration. S1–S3 demand is fixed at 50, 40, 45; S4 is 60, 70 or 80 with
   probability 0.15, 0.55, 0.30.
-- **Storm**: 18 configurations: storm outcome $z \in$ {miss, graze, landfall}, Texas surge
-  $u \in$ {low, medium, high}, emergency $e \in$ {no, yes}. The weight is
-  $p(z)\,p(u \mid z)\,p(e \mid z)$ times the likelihood of the observed evidence: advisory given
-  $z$, sales signal given $u$, TX capacity given $z$, lane status given $z$. An emergency reported
+- **Storm**: 18 configurations: storm outcome $`z \in`$ {miss, graze, landfall}, Texas surge
+  $`u \in`$ {low, medium, high}, emergency $`e \in`$ {no, yes}. The weight is
+  $`p(z)\,p(u \mid z)\,p(e \mid z)`$ times the likelihood of the observed evidence: advisory given
+  $`z`$, sales signal given $`u`$, TX capacity given $`z`$, lane status given $`z`$. An emergency reported
   as declared or not declared removes the configurations that disagree. Weights are normalised.
-  Given $\kappa$, each key has a five-point distribution with mean $\mu_k$:
-  the base mean, raised in Texas by the surge (FOODS $\times (1+g_u)$, HOUSEHOLD
-  $\times (1+0.8 g_u)$, HOBBIES $\times (1-0.5 g_u)$, with $g = 0.04, 0.18, 0.38$). Its atoms are
-  $\operatorname{round}\!\big(\mu_k (1 + \text{cv}_c\, \zeta_i / \sigma)\big)$ with probabilities
-  $(0.1, 0.2, 0.4, 0.2, 0.1)$, where $\zeta = (-1.6, -0.7, 0, 0.7, 1.6)$ and
-  $\sigma = \sqrt{2(0.1 \cdot 2.56 + 0.2 \cdot 0.49)}$. The exception rule lowers $f_k$ to
-  $\min(f_k, \text{exception fraction})$ in configurations with an emergency.
+  Given $`\kappa`$, each key has a five-point distribution with mean $`\mu_k`$:
+  the base mean, raised in Texas by the surge (FOODS $`\times (1+g_u)`$, HOUSEHOLD
+  $`\times (1+0.8 g_u)`$, HOBBIES $`\times (1-0.5 g_u)`$, with $`g = 0.04, 0.18, 0.38`$). Its atoms are
+  $`\operatorname{round}\!\big(\mu_k (1 + \text{cv}_c\, \zeta_i / \sigma)\big)`$ with probabilities
+  $`(0.1, 0.2, 0.4, 0.2, 0.1)`$, where $`\zeta = (-1.6, -0.7, 0, 0.7, 1.6)`$ and
+  $`\sigma = \sqrt{2(0.1 \cdot 2.56 + 0.2 \cdot 0.49)}`$. The exception rule lowers $`f_k`$ to
+  $`\min(f_k, \text{exception fraction})`$ in configurations with an emergency.
 
-The LP uses each key's **marginal** distribution: atoms $v_{k1} < \dots < v_{kn}$ with
-probabilities $p_{ki}$, pooled across configurations (values equal to within 0.001 are merged).
+The LP uses each key's **marginal** distribution: atoms $`v_{k1} \lt  \dots \lt  v_{kn}`$ with
+probabilities $`p_{ki}`$, pooled across configurations (values equal to within 0.001 are merged).
 
 ### Variables
 
-- $x_{\ell c} \ge 0$: units of category $c$ shipped on lane $\ell$;
-- $t_k \ge 0$: expected shortfall at key $k$;
-- $h_k \ge 0$: slack on the floor at key $k$;
-- $g_k \ge 0$ for $k \in P$: slack on the priority rule.
+- $`x_{\ell c} \ge 0`$: units of category $`c`$ shipped on lane $`\ell`$;
+- $`t_k \ge 0`$: expected shortfall at key $`k`$;
+- $`h_k \ge 0`$: slack on the floor at key $`k`$;
+- $`g_k \ge 0`$ for $`k \in P`$: slack on the priority rule.
 
-Units delivered to key $k = (s, c)$: $\;q_k = \sum_{\ell \text{ into } s} x_{\ell c}$.
+Units delivered to key $`k = (s, c)`$: $`\;q_k = \sum_{\ell \text{ into } s} x_{\ell c}`$.
 
 ### The LP (`solvePlan`, mode `mmap`)
 
-$$
+```math
 \begin{aligned}
 \min\quad & \sum_{\ell, c} \kappa_\ell\, x_{\ell c} + \sum_k \rho_k\, t_k
   + 10^4 \sum_k h_k + 10^5 \sum_{k \in P} g_k \\
@@ -237,28 +237,28 @@ $$
 & q_k + g_k \ge \theta_k && \forall k \in P \quad \text{(priority chance constraint)} \\
 & x, t, h, g \ge 0 .
 \end{aligned}
-$$
+```
 
-**Expected shortfall.** For a discrete demand $D$,
-$\mathbb E[(D - q)^+] = \max_m \big(\sum_{i \ge m} p_i v_i - q \sum_{i \ge m} p_i\big)^+$, a convex
-piecewise-linear function of $q$. The $n$ rows plus $t_k \ge 0$ are its epigraph, so at the optimum
-$t_k$ equals the expected shortfall exactly.
+**Expected shortfall.** For a discrete demand $`D`$,
+$`\mathbb E[(D - q)^+] = \max_m \big(\sum_{i \ge m} p_i v_i - q \sum_{i \ge m} p_i\big)^+`$, a convex
+piecewise-linear function of $`q`$. The $`n`$ rows plus $`t_k \ge 0`$ are its epigraph, so at the optimum
+$`t_k`$ equals the expected shortfall exactly.
 
-**Chance constraint as a threshold.** The rule at $k$ holds when $q_k \ge f_k D_k$. Its probability
-is $P_k(q) = \sum_\kappa w_\kappa \Pr_\kappa(D_k \le q / f_{k\kappa})$, a nondecreasing step
-function of $q$. So "$P_k(q_k) \ge \tau_{\text{each}}$" is exactly $q_k \ge \theta_k$, where
-$\theta_k$ (`chanceThreshold`) is the smallest candidate $q \in \{v \cdot f_{k\kappa}\}$ with
-$P_k(q) \ge \tau_{\text{each}} - 10^{-12}$. The chance constraint becomes a linear lower bound.
+**Chance constraint as a threshold.** The rule at $`k`$ holds when $`q_k \ge f_k D_k`$. Its probability
+is $`P_k(q) = \sum_\kappa w_\kappa \Pr_\kappa(D_k \le q / f_{k\kappa})`$, a nondecreasing step
+function of $`q`$. So "$`P_k(q_k) \ge \tau_{\text{each}}`$" is exactly $`q_k \ge \theta_k`$, where
+$`\theta_k`$ (`chanceThreshold`) is the smallest candidate $`q \in \{v \cdot f_{k\kappa}\}`$ with
+$`P_k(q) \ge \tau_{\text{each}} - 10^{-12}`$. The chance constraint becomes a linear lower bound.
 
-**Several priority keys.** With `joint` and $|P| > 1$, each key uses
-$\tau_{\text{each}} = 1 - (1 - \tau)/|P|$. By the union bound, all keys then hold together with
-probability at least $\tau$; this is conservative, not an exact joint chance constraint. Otherwise
-$\tau_{\text{each}} = \tau$.
+**Several priority keys.** With `joint` and $`|P| \gt  1`$, each key uses
+$`\tau_{\text{each}} = 1 - (1 - \tau)/|P|`$. By the union bound, all keys then hold together with
+probability at least $`\tau`$; this is conservative, not an exact joint chance constraint. Otherwise
+$`\tau_{\text{each}} = \tau`$.
 
-**Slacks.** $h$ and $g$ keep the LP feasible when the network cannot meet the policy. Their
-penalties ($10^4$, $10^5$) are far above any lane or shortage cost, so in practice they are
+**Slacks.** $`h`$ and $`g`$ keep the LP feasible when the network cannot meet the policy. Their
+penalties ($`10^4`$, $`10^5`$) are far above any lane or shortage cost, so in practice they are
 positive only when the policy cannot be met. The LP does not guarantee the smallest possible
-relaxation; it trades slack against those penalties. The page reports any slack above $10^{-4}$ as "relaxed".
+relaxation; it trades slack against those penalties. The page reports any slack above $`10^{-4}`$ as "relaxed".
 
 ### Worked example: the toy LP at τ = 70%
 
@@ -325,8 +325,8 @@ The solution (HiGHS and the page agree):
 |---|---|---|---|---|---|
 | From A | 50 | 33 | 27 | 20 | uses all 130 |
 | From B | 0 | 0 | 0 | 50 | uses all 50 |
-| Received $q$ | 50 | 33 | 27 | 70 | |
-| Expected shortage $t$ | 0 | 7 | 18 | 3 | S4: 30% chance of being 10 short |
+| Received $`q`$ | 50 | 33 | 27 | 70 | |
+| Expected shortage $`t`$ | 0 | 7 | 18 | 3 | S4: 30% chance of being 10 short |
 
 Transport is 50 + 66 + 135 + 120 + 50 = **421** (slide 20's figure). The shortage penalty is
 10·7 + 10·18 + 20·3 = 310, so the objective is **731**. No slack is used.
@@ -350,8 +350,8 @@ objective rises to 747.
 
 - **Most-likely-world plan** (mode `mpe`): find the configuration and per-key demand values with
   the highest probability (`mpeQuery`). Replace every key's distribution by a point mass at that
-  demand, and set $\theta_k = f_{k\kappa^*} D^*_k$. Same LP otherwise.
-- **Value of capacity**: re-solve the `mmap` LP with $K_d$ raised by one step (1 unit in the toy,
+  demand, and set $`\theta_k = f_{k\kappa^*} D^*_k`$. Same LP otherwise.
+- **Value of capacity**: re-solve the `mmap` LP with $`K_d`$ raised by one step (1 unit in the toy,
   1,000 in the storm network) for each DC in turn. Report the change in expected cost.
 - **Lane closure check** ("Can we still meet the Texas rule if the CA lane closes?"): condition the
   model on the closure (which also shifts the storm posterior) and drop the CA→TX lanes. Then score
@@ -360,15 +360,15 @@ objective rises to 747.
 ### How plans are scored (no LP)
 
 `evaluatePlan` computes, for any plan (the solver's, the most-likely-world plan, or one written by
-the LLM): transport $\sum \kappa_\ell x_{\ell c}$, expected shortfall penalty
-$\sum_k \rho_k \mathbb E[(D_k - q_k)^+]$, per-key rule probability $P_k(q_k)$, and the joint probability
-$\sum_\kappa w_\kappa \prod_{k \in P} \Pr_\kappa(D_k \le q_k / f_{k\kappa})$, which is exact under the
+the LLM): transport $`\sum \kappa_\ell x_{\ell c}`$, expected shortfall penalty
+$`\sum_k \rho_k \mathbb E[(D_k - q_k)^+]`$, per-key rule probability $`P_k(q_k)`$, and the joint probability
+$`\sum_\kappa w_\kappa \prod_{k \in P} \Pr_\kappa(D_k \le q_k / f_{k\kappa})`$, which is exact under the
 mixture model. The backtest then draws 2,000 weeks from the mixture (seeded mulberry32) and counts
 how often each plan meets the rule.
 
 ### Check: the toy preset
 
-The toy is the network from the tag-up slides. Solving the LP at $\tau = 0.7$ and $\tau = 0.9$ gives
+The toy is the network from the tag-up slides. Solving the LP at $`\tau = 0.7`$ and $`\tau = 0.9`$ gives
 transport costs 421 and 429, matching slide 20; the page checks this on its Model tab.
 
 ---
@@ -382,24 +382,24 @@ all three stores in at least 95% of the observations. The plans are then scored 
 30% of dates. It searches a grid of stock levels instead of calling a solver.
 
 The shared "Forecasting, translation, and decisions" section stocks three stores under one total
-capacity. It picks stock levels $x = (x_1, x_2, x_3)$ by exhaustive search:
+capacity. It picks stock levels $`x = (x_1, x_2, x_3)`$ by exhaustive search:
 
-- Candidate levels per store: $\lceil \beta \bar d_j \rceil$ (base floor of the training mean), and
-  for every sample $\lceil \gamma d_j \rceil$, $\lfloor d_j \rfloor$, $\lceil d_j \rceil$, each raised
+- Candidate levels per store: $`\lceil \beta \bar d_j \rceil`$ (base floor of the training mean), and
+  for every sample $`\lceil \gamma d_j \rceil`$, $`\lfloor d_j \rfloor`$, $`\lceil d_j \rceil`$, each raised
   to at least the base floor.
-- Feasible: $x_1 + x_2 + x_3 \le$ capacity, and the share of samples with
-  $x_j \ge \gamma d_j$ for all $j$ is at least 0.95. Under "independent marginals" it is the product
+- Feasible: $`x_1 + x_2 + x_3 \le`$ capacity, and the share of samples with
+  $`x_j \ge \gamma d_j`$ for all $`j`$ is at least 0.95. Under "independent marginals" it is the product
   of the per-store shares.
-- Cost: $\sum_j x_j + 8 \cdot \text{mean}_{\text{samples}} \sum_j (d_j - x_j)^+$; the cheapest
+- Cost: $`\sum_j x_j + 8 \cdot \text{mean}_{\text{samples}} \sum_j (d_j - x_j)^+`$; the cheapest
   feasible candidate wins.
 
-Here $\gamma$ is the priority floor (0.8 when an emergency is declared), $\beta$ the base floor,
+Here $`\gamma`$ is the priority floor (0.8 when an emergency is declared), $`\beta`$ the base floor,
 and the samples are the training rows (or only the training mean for the point forecast).
 
-**As an integer program.** With samples $d^{(n)}$, $n = 1..N$ (each of mass $1/N$), shortage
-variables $s_{nj} \ge 0$, and binaries $v_n$ for the joint rule:
+**As an integer program.** With samples $`d^{(n)}`$, $`n = 1..N`$ (each of mass $`1/N`$), shortage
+variables $`s_{nj} \ge 0`$, and binaries $`v_n`$ for the joint rule:
 
-$$
+```math
 \begin{aligned}
 \min\quad & \textstyle\sum_j x_j + \frac{8}{N} \sum_{n,j} s_{nj} \\
 \text{s.t.}\quad
@@ -408,10 +408,10 @@ $$
 & x_j + \gamma d^{(n)}_j\, v_n \ge \gamma d^{(n)}_j && \forall n, j \\
 & \textstyle\frac{1}{N} \sum_n v_n \le 0.05, \qquad x_j \in \mathbb Z_{\ge 0},\ v_n \in \{0, 1\} .
 \end{aligned}
-$$
+```
 
-For the point forecast, $N = 1$ with the training mean as the only sample, and the rule is a hard
-constraint ($v$ fixed to 0). The "independent marginals" option (a product of per-store shares)
+For the point forecast, $`N = 1`$ with the training mean as the only sample, and the rule is a hard
+constraint ($`v`$ fixed to 0). The "independent marginals" option (a product of per-store shares)
 has no linear form like this.
 
 **The page's search is not always optimal for this program.** It only tries the candidate levels
