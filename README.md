@@ -27,6 +27,10 @@ Scripts:
 - [`scripts/deepproblog_addition.py`](scripts/deepproblog_addition.py): the tididi solution as one script.
 - [`scripts/make_doc_images.py`](scripts/make_doc_images.py): redraws the data-based pictures in `docs/images`.
 
+Demos: [`demos/`](demos/README.md) holds two supply-planning demos, PILLAR Replan and Circuit Copilot,
+with a Python (FastAPI) backend and a TypeScript (Vite) front end. They do not use tididi. See its
+README to run them.
+
 ## Setup
 
 This repo has its own Python environment, separate from tididi's. It expects the

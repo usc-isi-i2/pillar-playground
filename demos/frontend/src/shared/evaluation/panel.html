@@ -1,0 +1,86 @@
+<h2>Forecasting, translation, and decisions</h2>
+<p>
+  Compare components separately using a three-store reference stocking problem. The original shipment demo above remains
+  available.
+</p>
+<p>
+  <a href="#evaluation-data">Demand model</a> · <a href="#evaluation-rules">Rule translation</a> ·
+  <a href="#evaluation-results">Comparison results</a>
+</p>
+<div class="eval-grid">
+  <div id="evaluation-data">
+    <h3>1. Demand observations</h3>
+    <label
+      >Dataset
+      <select id="ev-dataset">
+        <option value="correlated">Synthetic correlated demand</option>
+        <option value="independent">Synthetic independent demand</option>
+        <option value="shift">Synthetic demand shift in test period</option>
+      </select></label
+    ><label
+      >Upload original M5-derived or other demand observations
+      <input id="ev-file" type="file" accept=".csv,text/csv" /></label
+    ><small
+      >CSV: date,store_id,demand. Exactly three stores, 20–160 dates, one category, consistent time intervals. ISO dates
+      sort chronologically. The bundled CSV of means/CVs is not training data.</small
+    ><button id="ev-template">Download observation template</button
+    ><label
+      >Distribution
+      <select id="ev-dependence">
+        <option value="joint">Learned empirical joint distribution</option>
+        <option value="independent">Independent empirical marginals</option>
+      </select></label
+    ><label>Total inventory capacity <input id="ev-capacity" type="number" min="1" max="10000" value="240" /></label>
+    <p id="ev-provenance"></p>
+  </div>
+  <div id="evaluation-rules">
+    <h3>2. Reference and LLM rules</h3>
+    <textarea id="ev-instructions" aria-label="Operator instructions">
+Serve at least 90% of actual demand at all three stores together with at least 95% probability. Every store receives at least 60% of its training-mean forecast. No emergency is declared.</textarea
+    ><small
+      >Fixed reference: priority_floor 0.9, base_floor 0.6, emergency false. Editing the instructions changes the
+      translation task only. To compare a different policy, the reference must be revised in a future version.</small
+    ><button id="ev-copy">Copy translation prompt</button
+    ><a class="eval-btn" href="https://chatgpt.com/" target="_blank" rel="noopener">Open ChatGPT</a
+    ><textarea
+      id="ev-json"
+      aria-label="Paste ChatGPT JSON"
+      placeholder='Paste actual ChatGPT output: {"priority_floor":0.9,"base_floor":0.6,"emergency":false}'
+    ></textarea
+    ><small
+      >Explicit copy/paste handoff. No simulated LLM response and no API integration. Missing translations remain
+      unevaluated.</small
+    >
+  </div>
+</div>
+<button id="ev-run">Run paired comparison</button><button id="ev-export">Export evaluation JSON</button>
+<p id="ev-status" class="eval-status" role="status"></p>
+<div id="evaluation-results">
+  <h3>3. Results on the same held-out dates</h3>
+  <div class="eval-scroll">
+    <table>
+      <thead>
+        <tr>
+          <th>Rules</th>
+          <th>Demand</th>
+          <th>Units by store</th>
+          <th>Model compliance</th>
+          <th>Test violation rate</th>
+          <th>Test cost</th>
+        </tr>
+      </thead>
+      <tbody id="ev-results"></tbody>
+    </table>
+  </div>
+  <p id="ev-metrics"></p>
+  <pre id="ev-diagnosis"></pre>
+  <small
+    >First 70% of dates train both forecasts; last 30% test decisions. Point forecast = per-store training mean.
+    Distribution = empirical training vectors, with no test data fitting. Joint policy requires all three stores to
+    satisfy the floor together. Cost = units supplied + 8 × expected shortfall. Test violations always use the reference
+    90% rule, so mistranslations cannot redefine success. An emergency translation applies an 80% floor in planning. The
+    finite candidate search enumerates demand breakpoints exactly for this model; this is a small stocking reference,
+    not a full M5 competition model or the original network optimizer. Predicted compliance is model-relative and is not
+    a statistical guarantee.</small
+  >
+</div>

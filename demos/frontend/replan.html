@@ -1,0 +1,108 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+    <title>PILLAR Replan · ChatGPT</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Public+Sans:wght@400;500;600;700&display=swap"
+      rel="stylesheet"
+    />
+    <script type="module" src="/src/replan/main.ts"></script>
+  </head>
+  <body>
+    <header class="top">
+      <div>
+        <h1>PILLAR Replan <span style="font-weight: 400; color: var(--blue)">/ ChatGPT</span></h1>
+        <p>
+          Write down what you know, add what you’re seeing, and ask what to do. The plan comes from a solver and model
+          inference; ChatGPT translates, explains, and proposes a comparison plan.
+        </p>
+      </div>
+      <div class="top-controls">
+        <label
+          >Scenario
+          <select id="preset">
+            <option value="storm">Gulf storm week (M5-shaped)</option>
+            <option value="toy">Toy instance from the tag-up</option>
+          </select>
+        </label>
+        <span id="llmStatus" class="status">ChatGPT handoff ready</span
+        ><button id="chatgptSetup">ChatGPT connection</button
+        ><a href="/download" style="font-size: 13px; color: var(--blue)">Download app</a>
+      </div>
+    </header>
+    <div class="grid">
+      <aside class="left">
+        <section>
+          <h2>What you know</h2>
+          <textarea id="knowledge" aria-label="Operator knowledge in plain English"></textarea>
+          <div class="row">
+            <button id="translateBtn" class="primary">Compile with ChatGPT</button>
+            <button id="resetKnow">Reset text</button>
+          </div>
+          <p id="translateStatus" class="note" style="margin-top: 8px"></p>
+        </section>
+        <section>
+          <h2>Compiled rules</h2>
+          <ol id="paraphrase" class="rules"></ol>
+          <div id="unsupported"></div>
+          <div id="elicit"></div>
+          <details>
+            <summary>Edit the compiled spec directly</summary>
+            <textarea id="specJson" class="code" spellcheck="false" aria-label="Compiled spec as JSON"></textarea>
+            <div class="row"><button id="applySpec">Apply spec</button></div>
+            <p id="specErr" class="err"></p>
+          </details>
+        </section>
+        <section>
+          <h2>What you’re seeing now</h2>
+          <div id="evidence"></div>
+        </section>
+        <section id="dataSection">
+          <h2>Demand data</h2>
+          <p class="note" id="dataNote"></p>
+          <p class="note"><a href="/example_demand_m5_shaped.csv">Download example CSV</a></p>
+          <div class="row">
+            <input type="file" id="csv" accept=".csv,text/csv" aria-label="Load M5 store and category aggregates" />
+          </div>
+          <p id="csvMsg" class="note" style="margin-top: 6px"></p>
+        </section>
+      </aside>
+      <main class="main">
+        <div class="ask">
+          <input
+            type="text"
+            id="q"
+            placeholder="Ask what’s going on, report what you see, or ask what to do"
+            aria-label="Ask the agent"
+          />
+          <button id="askBtn" class="primary">Ask</button>
+        </div>
+        <div class="chips" id="suggest"></div>
+        <article id="answer" class="answer empty">
+          <div class="a">Answers appear here. Every number in them comes from the solver or the inference engine.</div>
+        </article>
+        <section>
+          <div class="plans-head">
+            <h2>Plans, scored by the same model</h2>
+            <button id="llmPlanBtn">Ask ChatGPT to plan directly</button>
+          </div>
+          <p class="note" id="planCaption"></p>
+          <div class="axis">
+            <span class="spacer"></span
+            ><span class="lab"
+              ><span>0%</span><span id="axisMid">probability the priority rule is met</span><span>100%</span></span
+            ><span class="spacer"></span>
+          </div>
+          <div id="planRows"></div>
+          <div id="delta"></div>
+        </section>
+        <nav class="tabs" role="tablist" id="tabs"></nav>
+        <div class="tabbody" id="tabBody"></div>
+      </main>
+    </div>
+  </body>
+</html>

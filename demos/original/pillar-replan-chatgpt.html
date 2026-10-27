@@ -1,0 +1,1241 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>PILLAR Replan · ChatGPT</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Public+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+:root{
+  --bg:#E9EDF1; --surface:#F8FAFB; --ink:#13212C; --muted:#56687A; --rule:#C8D1D9; --track:#DCE2E7;
+  --blue:#1D5FA8; --blue-tint:#DCE8F5; --amber:#9E6108; --amber-tint:#F4E5CB; --gray:#6B7B88; --gray-tint:#E3E8EC;
+  --crit:#B42318; --crit-tint:#F8E1DE; --good:#2C7449; --focus:#1D5FA8;
+  color-scheme:light;
+  box-sizing:border-box; padding-top:env(safe-area-inset-top,0px); padding-bottom:env(safe-area-inset-bottom,0px);
+}
+@media (prefers-color-scheme:dark){
+  :root:not([data-theme="light"]){
+    --bg:#0E151B; --surface:#16202A; --ink:#E5ECF1; --muted:#95A5B2; --rule:#2B3946; --track:#24313C;
+    --blue:#7AAEE9; --blue-tint:#1A2C41; --amber:#E2A43E; --amber-tint:#3A2C14; --gray:#9AA8B3; --gray-tint:#26323C;
+    --crit:#F2877C; --crit-tint:#3D1D1A; --good:#76C799; --focus:#7AAEE9; color-scheme:dark;
+  }
+}
+:root[data-theme="dark"]{
+  --bg:#0E151B; --surface:#16202A; --ink:#E5ECF1; --muted:#95A5B2; --rule:#2B3946; --track:#24313C;
+  --blue:#7AAEE9; --blue-tint:#1A2C41; --amber:#E2A43E; --amber-tint:#3A2C14; --gray:#9AA8B3; --gray-tint:#26323C;
+  --crit:#F2877C; --crit-tint:#3D1D1A; --good:#76C799; --focus:#7AAEE9; color-scheme:dark;
+}
+*,*::before,*::after{box-sizing:inherit}
+html{scroll-padding-top:env(safe-area-inset-top,0px)}
+body{margin:0;background:var(--bg);color:var(--ink);font:15px/1.5 "Public Sans",system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;font-variant-numeric:tabular-nums}
+button,input,select,textarea{font:inherit;color:inherit}
+:focus-visible{outline:2px solid var(--focus);outline-offset:2px}
+h1,h2,h3{margin:0;font-weight:600;letter-spacing:-0.005em}
+h1{font-size:22px;line-height:1.2}
+h2{font-size:15px}
+h3{font-size:14px}
+p{margin:0}
+.note{color:var(--muted);font-size:13px}
+.err{color:var(--crit);font-size:13px}
+.top{display:flex;flex-wrap:wrap;gap:12px 24px;align-items:flex-end;justify-content:space-between;padding:20px 24px 16px;border-bottom:1px solid var(--rule);background:var(--surface)}
+.top p{color:var(--muted);font-size:14px;margin-top:4px;max-width:60ch}
+.top-controls{display:flex;flex-wrap:wrap;gap:10px;align-items:center}
+.top-controls label{font-size:13px;color:var(--muted);display:flex;gap:8px;align-items:center}
+select,input[type=text],textarea{background:var(--bg);border:1px solid var(--rule);border-radius:6px;padding:7px 9px}
+select{padding-right:24px}
+.status{font-size:13px;padding:4px 10px;border-radius:999px;background:var(--gray-tint);color:var(--muted)}
+.status.on{background:var(--blue-tint);color:var(--blue)}
+.grid{display:grid;grid-template-columns:minmax(300px,380px) minmax(0,1fr);gap:0;max-width:1440px;margin:0 auto}
+.left{border-right:1px solid var(--rule);background:var(--surface);min-width:0}
+.left section{padding:18px 20px;border-bottom:1px solid var(--rule)}
+.left section h2{margin-bottom:10px}
+.main{padding:20px 24px 48px;min-width:0}
+textarea{width:100%;resize:vertical;line-height:1.45}
+#knowledge{min-height:150px;font-size:14px}
+textarea.code{font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;font-size:12px;min-height:220px}
+.row{display:flex;flex-wrap:wrap;gap:8px;margin-top:10px;align-items:center}
+button{cursor:pointer;border-radius:6px;border:1px solid var(--rule);background:var(--surface);padding:7px 12px}
+button:hover{border-color:var(--muted)}
+button.primary{background:var(--blue);border-color:var(--blue);color:var(--surface);font-weight:600}
+button.primary:hover{filter:brightness(1.08)}
+button:disabled{opacity:.55;cursor:default}
+button.link{border:none;background:none;padding:0;color:var(--blue);text-decoration:underline;text-underline-offset:2px}
+ol.rules{margin:0;padding-left:20px;font-size:14px}
+ol.rules li{margin:4px 0}
+ol.rules li.assumed::after{content:" (assumed)";color:var(--amber);font-size:12px}
+.unsupported{margin-top:8px;font-size:13px;color:var(--amber)}
+.elicit{margin-top:12px;padding:12px;border:1px solid var(--blue);border-radius:6px;background:var(--blue-tint)}
+.elicit p{font-weight:600;font-size:14px;margin-bottom:8px}
+.elicit .opts{display:flex;gap:8px;flex-wrap:wrap}
+details{margin-top:12px}
+summary{cursor:pointer;font-size:13px;color:var(--muted)}
+.ev-grid{display:grid;grid-template-columns:auto 1fr;gap:8px 12px;align-items:center;font-size:14px}
+.ev-grid select{width:100%}
+.ask{display:flex;gap:8px}
+.ask input{flex:1;min-width:0;font-size:16px;padding:10px 12px}
+.ask button{padding:10px 18px}
+.chips{display:flex;flex-wrap:wrap;gap:6px;margin:10px 0 18px}
+.chips button{font-size:13px;padding:4px 10px;border-radius:999px;background:transparent}
+.answer{border-left:3px solid var(--blue);padding:10px 0 10px 16px;margin-bottom:22px;min-height:24px}
+.answer .q{font-size:13px;color:var(--muted);margin-bottom:4px}
+.answer .a{font-size:16px;line-height:1.55;max-width:72ch}
+.answer .a mark{background:var(--crit-tint);color:var(--crit);border-bottom:1px dashed var(--crit)}
+.answer .meta{font-size:12px;color:var(--muted);margin-top:6px}
+.answer.empty .a{color:var(--muted);font-size:15px}
+.plans-head{display:flex;flex-wrap:wrap;gap:8px 16px;align-items:baseline;justify-content:space-between;margin-bottom:6px}
+.plans-head p{font-size:13px;color:var(--muted)}
+.plan{display:grid;grid-template-columns:minmax(170px,230px) minmax(0,1fr) minmax(130px,170px);gap:16px;align-items:center;padding:14px 0;border-top:1px solid var(--rule)}
+.plan:last-of-type{border-bottom:1px solid var(--rule)}
+.plan .name{font-weight:600}
+.plan .sub{font-size:12px;color:var(--muted);line-height:1.35;margin-top:2px}
+.rail{position:relative;height:30px;background:var(--track);border-radius:3px}
+.rail .fill{position:absolute;left:0;top:0;bottom:0;border-radius:3px 0 0 3px}
+.rail .tau{position:absolute;top:-6px;bottom:-6px;width:2px;background:var(--ink)}
+.rail .tau span{position:absolute;top:-18px;left:50%;transform:translateX(-50%);font-size:11px;color:var(--muted);white-space:nowrap}
+.rail .val{position:absolute;top:50%;transform:translateY(-50%);font-weight:700;font-size:15px;padding:0 8px;white-space:nowrap}
+.plan .nums{font-size:13px;color:var(--muted);text-align:right}
+.plan .nums b{display:block;font-size:17px;color:var(--ink);font-weight:600}
+.plan.mmap .fill{background:var(--blue)} .plan.mmap .name{color:var(--blue)}
+.plan.mpe .fill{background:var(--amber)} .plan.mpe .name{color:var(--amber)}
+.plan.llm .fill{background:var(--gray)}
+.plan .flag{font-size:12px;color:var(--crit);margin-top:4px}
+.delta{font-size:13px;margin:10px 0 0;padding:8px 12px;background:var(--surface);border:1px solid var(--rule);border-radius:6px}
+.axis{display:grid;grid-template-columns:minmax(170px,230px) minmax(0,1fr) minmax(130px,170px);gap:16px;font-size:12px;color:var(--muted);margin-top:14px}
+.axis .lab{display:flex;justify-content:space-between}
+.tabs{display:flex;gap:2px;margin-top:28px;border-bottom:1px solid var(--rule);overflow-x:auto}
+.tabs button{border:none;border-bottom:2px solid transparent;border-radius:0;background:none;padding:8px 14px;color:var(--muted);white-space:nowrap}
+.tabs button[aria-selected="true"]{color:var(--ink);border-bottom-color:var(--ink);font-weight:600}
+.tabbody{padding-top:18px}
+.tabbody h3{margin:18px 0 8px}
+.tabbody h3:first-child{margin-top:0}
+.scroll{overflow-x:auto}
+table{border-collapse:collapse;width:100%;font-size:14px}
+th,td{text-align:left;padding:7px 10px;border-bottom:1px solid var(--rule);vertical-align:top}
+th{font-size:12px;color:var(--muted);font-weight:600}
+td.n,th.n{text-align:right}
+td small{display:block;color:var(--muted);font-size:12px}
+.bars{display:grid;grid-template-columns:110px minmax(0,1fr) 54px;gap:6px 10px;align-items:center;font-size:14px;max-width:560px}
+.bar{height:14px;background:var(--track);border-radius:2px;overflow:hidden}
+.bar i{display:block;height:100%;background:var(--ink)}
+.bar.best i{background:var(--blue)}
+.util{display:grid;grid-template-columns:80px minmax(0,1fr) 150px;gap:6px 10px;align-items:center;font-size:13px;max-width:620px;margin-top:8px}
+.pill{display:inline-block;white-space:nowrap;font-size:12px;padding:1px 8px;border-radius:999px;background:var(--gray-tint);color:var(--muted)}
+.pill.ok{background:var(--blue-tint);color:var(--blue)}
+.pill.bad{background:var(--crit-tint);color:var(--crit)}
+.seg{display:inline-flex;border:1px solid var(--rule);border-radius:6px;overflow:hidden;margin-bottom:10px}
+.seg button{border:none;border-radius:0;padding:5px 12px;font-size:13px}
+.seg button[aria-pressed="true"]{background:var(--ink);color:var(--surface)}
+.spin{display:inline-block;width:12px;height:12px;border:2px solid var(--rule);border-top-color:var(--blue);border-radius:50%;animation:sp .8s linear infinite;vertical-align:-1px;margin-right:6px}
+@keyframes sp{to{transform:rotate(360deg)}}
+@media (prefers-reduced-motion:reduce){.spin{animation:none}}
+@media (max-width:900px){
+  .grid{grid-template-columns:1fr}
+  .left{border-right:none}
+  .main{padding:18px 16px 40px}
+  .plan,.axis{grid-template-columns:1fr;gap:8px}
+  .axis .spacer{display:none}
+  .plan .nums{text-align:left}
+}
+</style>
+</head>
+<body>
+<header class="top">
+  <div>
+    <h1>PILLAR Replan <span style="font-weight:400;color:var(--blue)">/ ChatGPT</span></h1>
+    <p>Write down what you know, add what you’re seeing, and ask what to do. The plan comes from a solver and model inference; ChatGPT translates, explains, and proposes a comparison plan.</p>
+  </div>
+  <div class="top-controls">
+    <label>Scenario
+      <select id="preset">
+        <option value="storm">Gulf storm week (M5-shaped)</option>
+        <option value="toy">Toy instance from the tag-up</option>
+      </select>
+    </label>
+    <span id="llmStatus" class="status">ChatGPT handoff ready</span><button id="chatgptSetup">ChatGPT connection</button><a href="/download" style="font-size:13px;color:var(--blue)">Download app</a>
+  </div>
+</header>
+<div class="grid">
+  <aside class="left">
+    <section>
+      <h2>What you know</h2>
+      <textarea id="knowledge" aria-label="Operator knowledge in plain English"></textarea>
+      <div class="row">
+        <button id="translateBtn" class="primary">Compile with ChatGPT</button>
+        <button id="resetKnow">Reset text</button>
+      </div>
+      <p id="translateStatus" class="note" style="margin-top:8px"></p>
+    </section>
+    <section>
+      <h2>Compiled rules</h2>
+      <ol id="paraphrase" class="rules"></ol>
+      <div id="unsupported"></div>
+      <div id="elicit"></div>
+      <details>
+        <summary>Edit the compiled spec directly</summary>
+        <textarea id="specJson" class="code" spellcheck="false" aria-label="Compiled spec as JSON"></textarea>
+        <div class="row"><button id="applySpec">Apply spec</button></div>
+        <p id="specErr" class="err"></p>
+      </details>
+    </section>
+    <section>
+      <h2>What you’re seeing now</h2>
+      <div id="evidence"></div>
+    </section>
+    <section id="dataSection">
+      <h2>Demand data</h2>
+      <p class="note" id="dataNote"></p><p class="note"><a href="/example_demand_m5_shaped.csv">Download example CSV</a></p>
+      <div class="row"><input type="file" id="csv" accept=".csv,text/csv" aria-label="Load M5 store and category aggregates"></div>
+      <p id="csvMsg" class="note" style="margin-top:6px"></p>
+    </section>
+  </aside>
+  <main class="main">
+    <div class="ask">
+      <input type="text" id="q" placeholder="Ask what’s going on, report what you see, or ask what to do" aria-label="Ask the agent">
+      <button id="askBtn" class="primary">Ask</button>
+    </div>
+    <div class="chips" id="suggest"></div>
+    <article id="answer" class="answer empty"><div class="a">Answers appear here. Every number in them comes from the solver or the inference engine.</div></article>
+    <section>
+      <div class="plans-head">
+        <h2>Plans, scored by the same model</h2>
+        <button id="llmPlanBtn">Ask ChatGPT to plan directly</button>
+      </div>
+      <p class="note" id="planCaption"></p>
+      <div class="axis"><span class="spacer"></span><span class="lab"><span>0%</span><span id="axisMid">probability the priority rule is met</span><span>100%</span></span><span class="spacer"></span></div>
+      <div id="planRows"></div>
+      <div id="delta"></div>
+    </section>
+    <nav class="tabs" role="tablist" id="tabs"></nav>
+    <div class="tabbody" id="tabBody"></div>
+  </main>
+</div>
+<script>
+// Shared adapter: optional server-side Responses API, plus a working ChatGPT copy/paste handoff.
+function createChatGPTBridge() {
+  let connected = false, pending = null;
+  const style = document.createElement('style');
+  style.textContent = '.gpt-dialog{max-width:760px;width:calc(100% - 28px);max-height:92vh;overflow:auto;border:1px solid #aabcca;border-radius:14px;padding:24px;color:#183348;background:#f8fafc;box-shadow:0 24px 80px #10273955}.gpt-dialog::backdrop{background:#10273999}.gpt-dialog h2{font-size:20px;margin:0 0 9px}.gpt-dialog p{margin:8px 0;font:14px/1.55 system-ui}.gpt-dialog textarea{display:block;width:100%;height:130px;font:12px/1.5 monospace;background:white;color:#183348;border:1px solid #b9c8d3;border-radius:6px;padding:10px;margin:9px 0}.gpt-dialog .gpt-actions{display:flex;flex-wrap:wrap;gap:8px;margin:12px 0}.gpt-dialog button,.gpt-dialog a{font:14px system-ui;background:white;color:#075e77;border:1px solid #aabcca;border-radius:6px;padding:9px 13px;text-decoration:none;cursor:pointer}.gpt-dialog .gpt-error{color:#a42625}.gpt-dialog label{font:bold 13px system-ui}.gpt-dialog small{font:12px/1.5 system-ui;color:#50697b}';
+  document.head.appendChild(style);
+  const dialog = document.createElement('dialog'); dialog.className = 'gpt-dialog';
+  dialog.innerHTML = '<h2>Continue with ChatGPT</h2><p id="gpt-help">Copy the prepared prompt, send it to ChatGPT, then paste its response below. The app will validate and score the result.</p><label for="gpt-prompt">Prepared prompt</label><textarea id="gpt-prompt" readonly></textarea><div class="gpt-actions"><button id="gpt-copy">Copy prompt</button><a href="https://chatgpt.com/" target="_blank" rel="noopener noreferrer">Open ChatGPT ↗</a><button id="gpt-download">Download prompt</button></div><label for="gpt-reply">ChatGPT response</label><textarea id="gpt-reply" placeholder="Paste ChatGPT’s response here"></textarea><p id="gpt-error" class="gpt-error" role="alert"></p><div class="gpt-actions"><button id="gpt-apply">Use response</button><button id="gpt-cancel">Cancel</button></div><small>Automatic replies use a server-side OpenAI API connection when configured. This handoff uses your existing ChatGPT session. No API key is requested or stored in this page.</small>';
+  document.body.appendChild(dialog);
+  const q = id => dialog.querySelector('#' + id);
+  const download = (name, text, type='text/plain') => { const u=URL.createObjectURL(new Blob([text],{type}));const a=document.createElement('a');a.href=u;a.download=name;a.click();setTimeout(()=>URL.revokeObjectURL(u),5000); };
+  function parseJSON(t) { let s=t.trim().replace(/^```(?:json)?\s*/i,'').replace(/\s*```$/,'');try{return JSON.parse(s);}catch{const i=s.indexOf('{'),j=s.lastIndexOf('}');if(i>=0&&j>i)return JSON.parse(s.slice(i,j+1));throw new Error('Paste a complete JSON object from ChatGPT.');}}
+  function cancel(){if(pending){pending.reject(Object.assign(new Error('ChatGPT handoff cancelled'),{code:'cancelled'}));pending=null;}dialog.close();}
+  q('gpt-cancel').onclick=cancel;dialog.addEventListener('cancel',e=>{e.preventDefault();cancel();});
+  q('gpt-copy').onclick=async()=>{try{await navigator.clipboard.writeText(q('gpt-prompt').value);q('gpt-copy').textContent='Copied';}catch{q('gpt-prompt').focus();q('gpt-prompt').select();q('gpt-error').textContent='Select and copy the prompt above.';}};
+  q('gpt-download').onclick=()=>download('pillar-chatgpt-prompt.txt',q('gpt-prompt').value);
+  q('gpt-apply').onclick=()=>{if(!pending)return;try{const value=pending.json?parseJSON(q('gpt-reply').value):q('gpt-reply').value.trim();if(!value)throw new Error('Paste a response first.');const task=pending;pending=null;dialog.close();task.resolve(value);}catch(e){q('gpt-error').textContent=e.message;}};
+  async function ready(){try{const r=await fetch('/api/config');const v=await r.json();connected=!!v.connected;}catch{connected=false;}return connected;}
+  async function request(prompt,json=false,options={}) {
+    if(connected){
+      const r=await fetch('/api/chatgpt',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({prompt,json})});
+      const d=await r.json();if(!r.ok)throw Object.assign(new Error(d.error||'OpenAI request failed'),{code:d.code||'api_error'});
+      if(!d.text)throw new Error('OpenAI returned no text.');
+      if(options.onText)options.onText({text:d.text});return json?parseJSON(d.text):d.text;
+    }
+    if(pending)throw new Error('Complete or cancel the current ChatGPT handoff first.');
+    q('gpt-prompt').value=prompt+(json?'\n\nReturn only the requested JSON object, without a code fence.':'');q('gpt-reply').value='';q('gpt-error').textContent='';q('gpt-copy').textContent='Copy prompt';dialog.showModal();
+    return new Promise((resolve,reject)=>{pending={resolve,reject,json};});
+  }
+  const sample=async(prompt,options={})=>({text:await request(prompt,false,options)});
+  sample.json=(prompt,options={})=>request(prompt,true,options);
+  return {ready,sample,json:sample.json,text:async(prompt)=>request(prompt,false),isConnected:()=>connected,parseJSON,download,showInfo:()=>{q('gpt-prompt').value='Use an LLM action in the application to prepare a task-specific prompt.';q('gpt-reply').value='';q('gpt-error').textContent='';dialog.showModal();}};
+}
+
+
+// ===== PILLAR Replan engine: LP solver + exact inference over a latent-mixture model =====
+// The probability model is a mixture over latent configurations k (storm, surge, emergency),
+// with store-category demands independent given k: p(D|e) = sum_k w_k prod_sc p_k(D_sc).
+// That is the structure of a sum-product circuit; queries below evaluate it exactly.
+
+const EPS = 1e-9;
+
+// ---------- Dense two-phase simplex. minimize c.x, rows: {a:{idx:coef}, op:'<='|'>='|'=', b}, x>=0
+function solveLP(n, c, rows, opts = {}) {
+  const maxIter = opts.maxIter || 20000;
+  const m = rows.length;
+  // normalize b >= 0
+  const R = rows.map(r => {
+    if (r.b < 0) {
+      const a = {}; for (const k in r.a) a[k] = -r.a[k];
+      return { a, b: -r.b, op: r.op === '<=' ? '>=' : r.op === '>=' ? '<=' : '=' };
+    }
+    return r;
+  });
+  let nSlack = 0, nArt = 0;
+  for (const r of R) { if (r.op !== '=') nSlack++; if (r.op !== '<=') nArt++; }
+  const nCol = n + nSlack + nArt, W = nCol + 1;
+  const T = new Float64Array(m * W);
+  const basis = new Int32Array(m);
+  const isArt = new Uint8Array(nCol);
+  let s = n, a = n + nSlack;
+  for (let i = 0; i < m; i++) {
+    const r = R[i], off = i * W;
+    for (const k in r.a) T[off + (+k)] = r.a[k];
+    T[off + nCol] = r.b;
+    if (r.op === '<=') { T[off + s] = 1; basis[i] = s; s++; }
+    else if (r.op === '>=') { T[off + s] = -1; s++; T[off + a] = 1; isArt[a] = 1; basis[i] = a; a++; }
+    else { T[off + a] = 1; isArt[a] = 1; basis[i] = a; a++; }
+  }
+  const z = new Float64Array(W);
+  let iter = 0;
+
+  function setObjective(cost) { // z = reduced costs, z[nCol] = -objective
+    z.fill(0);
+    for (let j = 0; j < nCol; j++) z[j] = cost[j] || 0;
+    for (let i = 0; i < m; i++) {
+      const cb = cost[basis[i]] || 0;
+      if (cb !== 0) { const off = i * W; for (let j = 0; j < W; j++) z[j] -= cb * T[off + j]; }
+    }
+  }
+  function pivot(pr, pc) {
+    const off = pr * W, pv = T[off + pc];
+    for (let j = 0; j < W; j++) T[off + j] /= pv;
+    for (let i = 0; i < m; i++) {
+      if (i === pr) continue;
+      const o2 = i * W, f = T[o2 + pc];
+      if (Math.abs(f) > 1e-13) for (let j = 0; j < W; j++) T[o2 + j] -= f * T[off + j];
+    }
+    const f = z[pc];
+    if (Math.abs(f) > 1e-13) for (let j = 0; j < W; j++) z[j] -= f * T[off + j];
+    basis[pr] = pc;
+  }
+  function run(allowed) {
+    let degenerate = 0;
+    while (iter++ < maxIter) {
+      const bland = degenerate > 50;
+      let pc = -1, best = -1e-9;
+      for (let j = 0; j < nCol; j++) {
+        if (!allowed(j)) continue;
+        if (z[j] < best) { pc = j; if (bland) break; best = z[j]; }
+      }
+      if (pc < 0) return 'optimal';
+      let pr = -1, minR = Infinity;
+      for (let i = 0; i < m; i++) {
+        const v = T[i * W + pc];
+        if (v > 1e-11) {
+          const ratio = T[i * W + nCol] / v;
+          if (ratio < minR - 1e-12 || (Math.abs(ratio - minR) <= 1e-12 && basis[i] < basis[pr])) { minR = ratio; pr = i; }
+        }
+      }
+      if (pr < 0) return 'unbounded';
+      degenerate = minR < 1e-12 ? degenerate + 1 : 0;
+      pivot(pr, pc);
+    }
+    return 'iteration_limit';
+  }
+  // Phase 1
+  if (nArt > 0) {
+    const c1 = new Float64Array(nCol); for (let j = 0; j < nCol; j++) if (isArt[j]) c1[j] = 1;
+    setObjective(c1);
+    const st = run(() => true);
+    if (st !== 'optimal' || -z[nCol] > 1e-6 * Math.max(1, ...R.map(r => r.b))) return { status: 'infeasible' };
+    for (let i = 0; i < m; i++) if (isArt[basis[i]]) { // drive out
+      const off = i * W; let pc = -1;
+      for (let j = 0; j < nCol; j++) if (!isArt[j] && Math.abs(T[off + j]) > 1e-9) { pc = j; break; }
+      if (pc >= 0) pivot(i, pc);
+    }
+  }
+  const c2 = new Float64Array(nCol); for (let j = 0; j < n; j++) c2[j] = c[j] || 0;
+  setObjective(c2);
+  const st = run(j => !isArt[j]);
+  if (st !== 'optimal') return { status: st };
+  const x = new Float64Array(n);
+  for (let i = 0; i < m; i++) if (basis[i] < n) x[basis[i]] = T[i * W + nCol];
+  let obj = 0; for (let j = 0; j < n; j++) obj += (c[j] || 0) * x[j];
+  return { status: 'optimal', x: Array.from(x), obj, iterations: iter };
+}
+
+// ---------- small helpers
+function mulberry32(seed) { return function () { seed |= 0; seed = seed + 0x6D2B79F5 | 0; let t = Math.imul(seed ^ seed >>> 15, 1 | seed); t = t + Math.imul(t ^ t >>> 7, 61 | t) ^ t; return ((t ^ t >>> 14) >>> 0) / 4294967296; }; }
+function mergeAtoms(list) { // [[v,p]] -> sorted, merged
+  const m = new Map(); for (const [v, p] of list) { const key = Math.round(v * 1000) / 1000; m.set(key, (m.get(key) || 0) + p); }
+  return [...m.entries()].filter(e => e[1] > 1e-15).sort((a, b) => a[0] - b[0]);
+}
+const EPS_BINS = { z: [-1.6, -0.7, 0, 0.7, 1.6], p: [0.1, 0.2, 0.4, 0.2, 0.1], sd: Math.sqrt(2 * (0.1 * 2.56 + 0.2 * 0.49)) };
+
+// ---------- Scenario presets
+const PRESETS = {
+  toy: {
+    id: 'toy', title: 'Toy instance from the September tag-up',
+    dcs: [{ id: 'A', state: '-', cap: 130 }, { id: 'B', state: '-', cap: 50 }],
+    stores: [{ id: 'S1', state: '-' }, { id: 'S2', state: '-' }, { id: 'S3', state: '-' }, { id: 'S4', state: '-' }],
+    cats: ['units'],
+    cost: { A: { S1: 1, S2: 2, S3: 5, S4: 6 }, B: { S1: 6, S2: 5, S3: 2, S4: 1 } },
+    forecast: { S1: 50, S2: 40, S3: 45, S4: 55 },
+    defaultSpec: { priority: [{ stores: ['S1', 'S4'], category: 'units', fraction: 0.9 }], floor: { fraction: 0.6 }, exception: null, crossStateMultiplier: null, penalties: { priority: 20, other: 10 }, tau: 0.9, joint: false },
+    knowledge: 'We have two DCs. A has capacity 130 and B has lost capacity, down to 50. S1 and S4 are priority stores: serve at least 90% of realized demand. Every store gets at least 60% of its forecast. Shortfall costs 20 per unit at priority stores and 10 elsewhere.'
+  },
+  storm: {
+    id: 'storm', title: 'Gulf storm week (M5-shaped network)',
+    states: ['CA', 'TX', 'WI'],
+    stores: [['CA_1', 21000], ['CA_2', 17500], ['CA_3', 30000], ['CA_4', 12000], ['TX_1', 16500], ['TX_2', 21000], ['TX_3', 18500], ['WI_1', 15500], ['WI_2', 20500], ['WI_3', 19000]].map(([id, w]) => ({ id, state: id.slice(0, 2), weekly: w })),
+    cats: ['FOODS', 'HOUSEHOLD', 'HOBBIES'],
+    share: { FOODS: 0.68, HOUSEHOLD: 0.22, HOBBIES: 0.10 },
+    cv: { FOODS: 0.07, HOUSEHOLD: 0.10, HOBBIES: 0.15 },
+    capFactor: 1.35,
+    laneCost: { CA: { CA: 1, TX: 4, WI: 6 }, TX: { CA: 4, TX: 1, WI: 4.5 }, WI: { CA: 6, TX: 4.5, WI: 1 } },
+    defaultSpec: { priority: [{ stores: ['TX_1', 'TX_2', 'TX_3'], category: 'FOODS', fraction: 0.9 }], floor: { fraction: 0.6 }, exception: { when: 'emergency_declared', fraction: 0.8 }, crossStateMultiplier: 4, penalties: { priority: 8, other: 6 }, tau: null, joint: true },
+    knowledge: 'We run three distribution centers, one per state. Each normally ships only to its own state\u2019s stores; cross-state shipments cost about four times as much. During a storm, FOODS at Texas stores is priority: serve at least 90% of actual demand. Every store gets at least 60% of its forecast in every category. If the state declares an emergency, the Texas FOODS floor drops to 80%. Shortfall costs 8 per unit on priority items and 6 elsewhere. The Texas rule counts as met only if all three Texas stores meet it.',
+    // Disruption model (illustrative parameters)
+    Z: ['miss', 'graze', 'landfall'], pZ: [0.35, 0.45, 0.20],
+    pAdv: { none: [0.6, 0.15, 0.05], watch: [0.3, 0.55, 0.25], warning: [0.1, 0.30, 0.70] },
+    U: ['low', 'medium', 'high'], pU: [[0.75, 0.2, 0.05], [0.3, 0.5, 0.2], [0.1, 0.35, 0.55]],
+    surge: [0.04, 0.18, 0.38],
+    pSales: { flat: [0.7, 0.25, 0.08], up: [0.25, 0.55, 0.37], sharp: [0.05, 0.20, 0.55] },
+    pCap: { 1.0: [0.85, 0.35, 0.10], 0.7: [0.12, 0.50, 0.40], 0.4: [0.03, 0.15, 0.50] },
+    pLaneClosed: [0.03, 0.15, 0.45],
+    pEmerg: [0.02, 0.25, 0.80]
+  }
+};
+
+const DEFAULT_EVIDENCE = { advisory: 'watch', sales: 'unknown', txCap: 0.7, caLane: 'open', emergency: 'unknown', week: 'normal' };
+
+// ---------- Build the model for (preset, spec, evidence)
+function buildModel(presetId, spec, ev, overrides = {}) {
+  const P = PRESETS[presetId];
+  const M = { presetId, spec, ev, stores: P.stores.map(s => s.id), cats: P.cats.slice(), notes: [] };
+  M.sc = []; for (const s of M.stores) for (const c of M.cats) M.sc.push(s + '|' + c);
+  M.storeState = {}; P.stores.forEach(s => M.storeState[s.id] = s.state);
+  const tau = spec.tau == null ? 0.9 : spec.tau;
+  M.tau = tau;
+  // priority set
+  M.prio = {};
+  for (const r of spec.priority || []) for (const s of r.stores) if (M.stores.includes(s) && M.cats.includes(r.category)) M.prio[s + '|' + r.category] = r.fraction;
+  M.pen = {}; for (const k of M.sc) M.pen[k] = M.prio[k] != null ? spec.penalties.priority : spec.penalties.other;
+
+  if (presetId === 'toy') {
+    M.dcs = P.dcs.map(d => ({ ...d }));
+    M.lanes = []; for (const d of M.dcs) for (const s of M.stores) M.lanes.push({ dc: d.id, store: s, cost: P.cost[d.id][s] });
+    M.forecast = {}; for (const s of M.stores) M.forecast[s + '|units'] = P.forecast[s];
+    const atoms = { 'S1|units': [[50, 1]], 'S2|units': [[40, 1]], 'S3|units': [[45, 1]], 'S4|units': [[60, 0.15], [70, 0.55], [80, 0.30]] };
+    M.configs = [{ w: 1, label: { z: '-', u: '-', e: false }, atoms }];
+    M.latentNames = [];
+  } else {
+    const mult = spec.crossStateMultiplier || 4;
+    const baseMean = {}; const capBase = { CA: 0, TX: 0, WI: 0 };
+    for (const s of P.stores) for (const c of P.cats) {
+      const ck = s.id + '|' + c;
+      let m = (P.custom && P.custom.base[ck] != null) ? P.custom.base[ck] : s.weekly * P.share[c];
+      if (ev.week === 'snap' && c === 'FOODS') m *= 1.06;
+      baseMean[s.id + '|' + c] = Math.round(m); capBase[s.state] += m;
+    }
+    M.forecast = baseMean;
+    M.dcs = P.states.map(st => ({ id: 'DC_' + st, state: st, cap: Math.round(capBase[st] * P.capFactor * (st === 'TX' ? ev.txCap : 1)) }));
+    if (overrides.capDelta) for (const d of M.dcs) d.cap += overrides.capDelta[d.id] || 0;
+    M.lanes = [];
+    const caLane = overrides.caLane || ev.caLane;
+    for (const d of M.dcs) for (const s of P.stores) {
+      if (d.state === 'CA' && s.state === 'TX' && caLane === 'closed') continue;
+      const base = P.laneCost[d.state][s.state];
+      const cost = d.state === s.state ? base : base * (mult / 4);
+      M.lanes.push({ dc: d.id, store: s.id, cost });
+    }
+    // latent configurations and posterior weights
+    const configs = [];
+    for (let zi = 0; zi < 3; zi++) for (let ui = 0; ui < 3; ui++) for (const e of [false, true]) {
+      let w = P.pZ[zi] * P.pU[zi][ui];
+      if (ev.advisory !== 'unknown') w *= P.pAdv[ev.advisory][zi];
+      if (ev.sales !== 'unknown') w *= P.pSales[ev.sales][ui];
+      w *= P.pCap[ev.txCap][zi];
+      w *= caLane === 'closed' ? P.pLaneClosed[zi] : 1 - P.pLaneClosed[zi];
+      const pe = P.pEmerg[zi];
+      w *= e ? pe : 1 - pe;
+      if (ev.emergency === 'declared' && !e) w = 0;
+      if (ev.emergency === 'not_declared' && e) w = 0;
+      configs.push({ zi, ui, e, w0: w });
+    }
+    const Zs = configs.reduce((a, k) => a + k.w0, 0);
+    M.configs = configs.filter(k => k.w0 > 0).map(k => {
+      const atoms = {};
+      for (const s of P.stores) for (const c of P.cats) {
+        const key = s.id + '|' + c; let mu = baseMean[key];
+        if (s.state === 'TX') { const sg = P.surge[k.ui]; mu *= c === 'FOODS' ? 1 + sg : c === 'HOUSEHOLD' ? 1 + 0.8 * sg : 1 - 0.5 * sg; }
+        const cv = (P.custom && P.custom.cv[key] != null) ? P.custom.cv[key] : P.cv[c];
+        atoms[key] = EPS_BINS.z.map((zz, i) => [Math.round(mu * (1 + cv * zz / EPS_BINS.sd)), EPS_BINS.p[i]]);
+      }
+      return { w: k.w0 / Zs, label: { z: P.Z[k.zi], u: P.U[k.ui], e: k.e }, atoms };
+    });
+  }
+  // policy fraction per config (exception fires under declared emergency)
+  for (const k of M.configs) {
+    k.frac = {};
+    for (const key in M.prio) k.frac[key] = (spec.exception && k.label.e) ? Math.min(M.prio[key], spec.exception.fraction) : M.prio[key];
+  }
+  // marginals
+  M.marg = {};
+  for (const key of M.sc) { const l = []; for (const k of M.configs) for (const [v, p] of k.atoms[key]) l.push([v, k.w * p]); M.marg[key] = mergeAtoms(l); }
+  return M;
+}
+
+function cdfLE(atoms, x) { let s = 0; for (const [v, p] of atoms) if (v <= x + 1e-9) s += p; return s; }
+function expShort(atoms, q) { let s = 0; for (const [v, p] of atoms) if (v > q) s += p * (v - q); return s; }
+function mean(atoms) { return atoms.reduce((a, [v, p]) => a + v * p, 0); }
+function quantile(atoms, a) { let s = 0; for (const [v, p] of atoms) { s += p; if (s >= a - 1e-12) return v; } return atoms[atoms.length - 1][0]; }
+
+// p(rule at key met | q): sum_k w_k P_k(D <= q / f_k)
+function pRuleMet(M, key, q) { let s = 0; for (const k of M.configs) s += k.w * cdfLE(k.atoms[key], q / k.frac[key]); return s; }
+function pAllMet(M, qmap) {
+  let s = 0; const keys = Object.keys(M.prio);
+  for (const k of M.configs) { let pr = k.w; for (const key of keys) pr *= cdfLE(k.atoms[key], qmap[key] / k.frac[key]); s += pr; }
+  return s;
+}
+// smallest q with pRuleMet >= tau
+function chanceThreshold(M, key, tau) {
+  const cands = new Set(); for (const k of M.configs) for (const [v] of k.atoms[key]) cands.add(v * k.frac[key]);
+  const sorted = [...cands].sort((a, b) => a - b);
+  for (const q of sorted) if (pRuleMet(M, key, q) >= tau - 1e-12) return q;
+  return sorted[sorted.length - 1];
+}
+
+// ---------- Solve a plan. mode 'mmap' (average over demand, chance constraints) or 'mpe' (plan for most likely world)
+function solvePlan(M, mode = 'mmap', opt = {}) {
+  const keys = M.sc; const prioKeys = Object.keys(M.prio);
+  let atomsFor = M.marg, fracFor = null, mpe = null;
+  if (mode === 'mpe') {
+    mpe = mpeQuery(M);
+    atomsFor = {}; for (const key of keys) atomsFor[key] = [[mpe.demand[key], 1]];
+  }
+  let tauEach = M.tau;
+  if (M.spec.joint && prioKeys.length > 1) tauEach = 1 - (1 - M.tau) / prioKeys.length;
+  const threshold = {};
+  for (const key of prioKeys) threshold[key] = mode === 'mpe' ? mpe.frac[key] * mpe.demand[key] : chanceThreshold(M, key, tauEach);
+  // variables
+  const idx = []; const lanesOf = {}; keys.forEach(k => lanesOf[k] = []);
+  for (const L of M.lanes) for (const c of M.cats) { const key = L.store + '|' + c; lanesOf[key].push(idx.length); idx.push({ t: 'x', L, c, key }); }
+  const nx = idx.length;
+  const tIdx = {}; for (const key of keys) { tIdx[key] = idx.length; idx.push({ t: 't', key }); }
+  const hIdx = {}; for (const key of keys) { hIdx[key] = idx.length; idx.push({ t: 'h', key }); }
+  const gIdx = {}; for (const key of prioKeys) { gIdx[key] = idx.length; idx.push({ t: 'g', key }); }
+  const n = idx.length, c = new Array(n).fill(0);
+  for (let j = 0; j < nx; j++) c[j] = idx[j].L.cost;
+  for (const key of keys) { c[tIdx[key]] = M.pen[key]; c[hIdx[key]] = 1e4; }
+  for (const key of prioKeys) c[gIdx[key]] = 1e5;
+  const rows = [];
+  for (const d of M.dcs) { const a = {}; for (let j = 0; j < nx; j++) if (idx[j].L.dc === d.id) a[j] = 1; rows.push({ a, op: '<=', b: d.cap, tag: 'cap:' + d.id }); }
+  const floorF = M.spec.floor ? M.spec.floor.fraction : 0;
+  for (const key of keys) {
+    const a = {}; for (const j of lanesOf[key]) a[j] = 1; a[hIdx[key]] = 1;
+    rows.push({ a, op: '>=', b: floorF * M.forecast[key], tag: 'floor:' + key });
+    // expected shortfall epigraph: t >= sum_{j>=m} p_j v_j - (sum_{j>=m} p_j) q
+    const at = atomsFor[key];
+    for (let mI = 0; mI < at.length; mI++) {
+      let P = 0, C = 0; for (let j = mI; j < at.length; j++) { P += at[j][1]; C += at[j][1] * at[j][0]; }
+      const a2 = {}; a2[tIdx[key]] = 1; for (const j of lanesOf[key]) a2[j] = P;
+      rows.push({ a: a2, op: '>=', b: C, tag: 'epi' });
+    }
+  }
+  for (const key of prioKeys) { const a = {}; for (const j of lanesOf[key]) a[j] = 1; a[gIdx[key]] = 1; rows.push({ a, op: '>=', b: threshold[key], tag: 'chance:' + key }); }
+  const t0 = Date.now();
+  const res = solveLP(n, c, rows);
+  const ms = Date.now() - t0;
+  if (res.status !== 'optimal') return { status: res.status, mode, ms };
+  const ship = []; const q = {}; keys.forEach(k => q[k] = 0);
+  for (let j = 0; j < nx; j++) if (res.x[j] > 1e-6) { ship.push({ dc: idx[j].L.dc, store: idx[j].L.store, cat: idx[j].c, qty: res.x[j], cost: idx[j].L.cost }); q[idx[j].key] += res.x[j]; }
+  const relaxed = [];
+  for (const key of keys) if (res.x[hIdx[key]] > 1e-4) relaxed.push({ rule: 'floor', key, units: res.x[hIdx[key]] });
+  for (const key of prioKeys) if (res.x[gIdx[key]] > 1e-4) relaxed.push({ rule: 'priority', key, units: res.x[gIdx[key]] });
+  return { status: 'optimal', mode, ship, q, threshold, tauEach, mpe, relaxed, ms, iterations: res.iterations, nVars: n, nRows: rows.length };
+}
+
+// ---------- MPE query: most likely latent configuration and demand values (max-product)
+function mpeQuery(M) {
+  let best = null;
+  for (const k of M.configs) {
+    let score = Math.log(k.w);
+    const demand = {};
+    for (const key of M.sc) { let bv = null, bp = -1; for (const [v, p] of k.atoms[key]) if (p > bp + 1e-12) { bp = p; bv = v; } demand[key] = bv; score += Math.log(bp); }
+    if (!best || score > best.score) best = { score, label: k.label, demand, frac: k.frac, w: k.w };
+  }
+  return best;
+}
+
+// ---------- Posterior over named latents and leave-one-out evidence attribution
+function diagnose(presetId, spec, ev) {
+  const M = buildModel(presetId, spec, ev);
+  if (presetId === 'toy') return { M, posterior: null, mpe: mpeQuery(M), attribution: [] };
+  const P = PRESETS.storm;
+  const post = (MM) => { const z = [0, 0, 0], u = [0, 0, 0]; let e = 0; for (const k of MM.configs) { z[P.Z.indexOf(k.label.z)] += k.w; u[P.U.indexOf(k.label.u)] += k.w; if (k.label.e) e += k.w; } return { z, u, e }; };
+  const full = post(M);
+  const attribution = [];
+  const items = [['advisory', 'Storm advisory', 'unknown'], ['sales', 'TX sales signal', 'unknown'], ['emergency', 'Emergency status', 'unknown']];
+  for (const [field, label, neutral] of items) {
+    if (ev[field] === neutral) continue;
+    const without = post(buildModel(presetId, spec, { ...ev, [field]: neutral }));
+    attribution.push({ label, value: ev[field], landfallWithout: without.z[2], landfallWith: full.z[2], highWithout: without.u[2], highWith: full.u[2] });
+  }
+  return { M, posterior: full, mpe: mpeQuery(M), attribution };
+}
+
+// ---------- Evaluate any plan (from solver, LLM, or operator) exactly under the model
+function evaluatePlan(M, ship) {
+  const q = {}; M.sc.forEach(k => q[k] = 0);
+  const issues = [];
+  const laneSet = new Map(M.lanes.map(L => [L.dc + '>' + L.store, L.cost]));
+  const used = {}; M.dcs.forEach(d => used[d.id] = 0);
+  let transport = 0;
+  for (const s of ship) {
+    const cost = laneSet.get(s.dc + '>' + s.store);
+    if (cost == null) { issues.push(`Uses closed or unknown lane ${s.dc} to ${s.store}`); continue; }
+    if (!(s.qty >= 0)) continue;
+    q[s.store + '|' + s.cat] = (q[s.store + '|' + s.cat] || 0) + s.qty; used[s.dc] += s.qty; transport += s.qty * cost;
+  }
+  for (const d of M.dcs) if (used[d.id] > d.cap + 1e-6) issues.push(`${d.id} over capacity by ${Math.round(used[d.id] - d.cap).toLocaleString()} units`);
+  const floorF = M.spec.floor ? M.spec.floor.fraction : 0;
+  const floorShort = []; for (const key of M.sc) if (q[key] < floorF * M.forecast[key] - 1e-6) floorShort.push({ key, units: floorF * M.forecast[key] - q[key] });
+  let shortPen = 0, expShortTotal = 0; const perKey = {};
+  for (const key of M.sc) { const es = expShort(M.marg[key], q[key]); perKey[key] = es; expShortTotal += es; shortPen += es * M.pen[key]; }
+  const rules = Object.keys(M.prio).map(key => ({ key, frac: M.prio[key], q: q[key], p: pRuleMet(M, key, q[key]) }));
+  const pAll = Object.keys(M.prio).length ? pAllMet(M, q) : 1;
+  const binding = [];
+  for (const d of M.dcs) if (used[d.id] >= d.cap - 0.5) binding.push(`${d.id} capacity`);
+  for (const key of M.sc) if (Math.abs(q[key] - floorF * M.forecast[key]) < 0.5) binding.push(`60% floor at ${key.replace('|', ' ')}`.replace('60%', Math.round(floorF * 100) + '%'));
+  return { q, used, transport, shortPen, expShortTotal, expCost: transport + shortPen, rules, pAll, issues, floorShort, binding, perKey, feasible: issues.length === 0 && floorShort.length === 0 };
+}
+
+// ---------- Monte Carlo backtest: draw realized weeks from the posterior, score each plan
+function sampleWorld(M, rnd) {
+  let r = rnd(), k = M.configs[M.configs.length - 1];
+  for (const kk of M.configs) { r -= kk.w; if (r <= 0) { k = kk; break; } }
+  const d = {}; for (const key of M.sc) { let r2 = rnd(); const at = k.atoms[key]; d[key] = at[at.length - 1][0]; for (const [v, p] of at) { r2 -= p; if (r2 <= 0) { d[key] = v; break; } } }
+  return { k, d };
+}
+function backtest(M, plans, N = 2000, seed = 7) {
+  const rnd = mulberry32(seed); const out = plans.map(() => ({ met: 0, cost: 0 }));
+  const evals = plans.map(p => evaluatePlan(M, p.ship));
+  for (let i = 0; i < N; i++) {
+    const w = sampleWorld(M, rnd);
+    plans.forEach((p, pi) => {
+      const ev = evals[pi]; let ok = true, pen = 0;
+      for (const key of M.sc) { const short = Math.max(0, w.d[key] - ev.q[key]); pen += short * M.pen[key]; if (M.prio[key] != null && ev.q[key] < w.k.frac[key] * w.d[key] - 1e-9) ok = false; }
+      if (ok) out[pi].met++; out[pi].cost += ev.transport + pen;
+    });
+  }
+  return out.map(o => ({ rate: o.met / N, avgCost: o.cost / N }));
+}
+
+if (typeof module !== 'undefined') module.exports = { solveLP, buildModel, solvePlan, evaluatePlan, diagnose, backtest, mpeQuery, PRESETS, DEFAULT_EVIDENCE, sampleWorld, mulberry32, quantile, mean };
+
+// ===================== App =====================
+const $ = s => document.querySelector(s);
+const esc = s => String(s).replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
+const clone = o => JSON.parse(JSON.stringify(o));
+const fInt = v => Math.round(v).toLocaleString('en-US');
+const fPct = p => { if (p >= 0.9995) return '100%'; const r = Math.round(p * 100); if (r === 100) return (p * 100).toFixed(1) + '%'; if (r === 0 && p > 0) return (p * 100).toFixed(1) + '%'; return r + '%'; };
+const fCost = v => Math.abs(v) >= 10000 ? (v / 1000).toFixed(0) + 'k' : fInt(v);
+const keyLabel = k => { const [s, c] = k.split('|'); return c === 'units' ? s : s + ' ' + c; };
+
+const state = {
+  preset: 'storm', spec: null, ev: null, M: null, diag: null, plans: {}, evals: {}, bt: null, shadow: null,
+  llmPlan: null, prev: null, tab: 'diagnosis', shipView: 'mmap', assumed: [], unsupported: [], sample: null, downloads: null,
+  lastSolveMs: 0, world: null, busy: false
+};
+
+// ---------- missing parameters (the agent never invents them)
+function missingParams(spec) {
+  const out = [];
+  if (spec.tau == null) out.push({ param: 'tau', q: 'How sure must the priority rule be?', opts: [[0.8, '80%'], [0.9, '90%'], [0.95, '95%']] });
+  if (spec.penalties == null) out.push({ param: 'penalties', q: 'What does a unit of shortfall cost (priority / other)?', opts: [[{ priority: 8, other: 6 }, '8 / 6'], [{ priority: 20, other: 10 }, '20 / 10'], [{ priority: 5, other: 4 }, '5 / 4']] });
+  return out;
+}
+
+// ---------- spec validation: what the compiler accepts
+function validateSpec(raw) {
+  const P = PRESETS[state.preset]; const stores = P.stores.map(s => s.id); const errs = [];
+  if (!raw || typeof raw !== 'object') return { spec: null, errs: ['The spec is not an object.'] };
+  const spec = { priority: [], floor: null, exception: null, crossStateMultiplier: null, penalties: null, tau: null, joint: !!raw.joint };
+  for (const r of Array.isArray(raw.priority) ? raw.priority : []) {
+    const cat = P.cats.includes(r.category) ? r.category : (P.cats.length === 1 ? P.cats[0] : null);
+    if (!cat) { errs.push(`Unknown category “${r.category}” in a priority rule.`); continue; }
+    const ss = (r.stores || []).filter(s => stores.includes(s)); const bad = (r.stores || []).filter(s => !stores.includes(s));
+    if (bad.length) errs.push(`Unknown stores dropped: ${bad.join(', ')}.`);
+    const f = +r.fraction; if (!(f > 0 && f <= 1)) { errs.push('A priority fraction must be between 0 and 1.'); continue; }
+    if (ss.length) spec.priority.push({ stores: ss, category: cat, fraction: f });
+  }
+  if (raw.floor && +raw.floor.fraction >= 0 && +raw.floor.fraction <= 1) spec.floor = { fraction: +raw.floor.fraction };
+  if (raw.exception && +raw.exception.fraction > 0 && +raw.exception.fraction <= 1) spec.exception = { when: 'emergency_declared', fraction: +raw.exception.fraction };
+  if (raw.crossStateMultiplier != null) { const m = +raw.crossStateMultiplier; if (m >= 1) spec.crossStateMultiplier = m; else errs.push('Cross-state multiplier must be at least 1.'); }
+  if (raw.penalties && +raw.penalties.priority > 0 && +raw.penalties.other > 0) spec.penalties = { priority: +raw.penalties.priority, other: +raw.penalties.other };
+  if (raw.tau != null) { const t = +raw.tau; if (t > 0.5 && t <= 1) spec.tau = t; else errs.push('Confidence τ must be greater than 0.5 and at most 1.'); }
+  if (!spec.priority.length) errs.push('No priority rule was compiled.');
+  return { spec, errs };
+}
+
+// ---------- deterministic paraphrase of what was compiled (not the LLM’s words)
+function paraphrase(spec) {
+  const toy = state.preset === 'toy'; const L = [];
+  const andList = xs => xs.length < 3 ? xs.join(' and ') : xs.slice(0, -1).join(', ') + ' and ' + xs.at(-1);
+  for (const r of spec.priority) L.push({ t: `${andList(r.stores)}${toy ? '' : ' ' + r.category} must get at least ${fPct(r.fraction)} of realized demand.`, k: 'priority' });
+  if (spec.exception) L.push({ t: `If an emergency is declared, that level drops to ${fPct(spec.exception.fraction)}.`, k: 'exception' });
+  if (spec.floor) L.push({ t: `Every store${toy ? '' : ' and category'} gets at least ${fPct(spec.floor.fraction)} of its normal-week forecast.`, k: 'floor' });
+  if (!toy) L.push({ t: spec.crossStateMultiplier ? `Cross-state lanes cost ${spec.crossStateMultiplier}× in-state lanes.` : 'Cross-state lane costs come from the network data (4× in-state).', k: 'crossStateMultiplier' });
+  if (spec.penalties) L.push({ t: `Shortfall costs ${spec.penalties.priority} per unit on priority items and ${spec.penalties.other} elsewhere.`, k: 'penalties' });
+  if (spec.tau != null) L.push({ t: `The priority rule must hold with probability at least ${fPct(spec.tau)}${spec.joint && spec.priority.reduce((a, r) => a + r.stores.length, 0) > 1 ? ', for all priority stores together' : ', for each priority store'}.`, k: 'tau' });
+  L.push({ t: 'DC capacities and closed lanes are hard limits.', k: 'hard' });
+  return L;
+}
+
+// ---------- compute everything
+function recompute() {
+  const t0 = performance.now();
+  const missing = missingParams(state.spec);
+  const specForModel = missing.length ? { ...state.spec, tau: state.spec.tau ?? 0.9, penalties: state.spec.penalties ?? { priority: 8, other: 6 } } : state.spec;
+  state.diag = diagnose(state.preset, specForModel, state.ev);
+  state.M = state.diag.M;
+  state.plans = {}; state.evals = {}; state.bt = null; state.shadow = null;
+  if (!missing.length) {
+    const M = state.M;
+    state.plans.mmap = solvePlan(M, 'mmap');
+    state.plans.mpe = solvePlan(M, 'mpe');
+    for (const id of ['mmap', 'mpe']) if (state.plans[id].status === 'optimal') state.evals[id] = evaluatePlan(M, state.plans[id].ship);
+    if (state.llmPlan) { state.plans.llm = state.llmPlan; state.evals.llm = evaluatePlan(M, state.llmPlan.ship); }
+    const ids = Object.keys(state.evals);
+    const bt = backtest(M, ids.map(id => state.plans[id]), 2000, 11);
+    state.bt = {}; ids.forEach((id, i) => state.bt[id] = bt[i]);
+    // marginal value of capacity, by re-solving with more capacity at each DC
+    if (state.evals.mmap) {
+      const step = state.preset === 'toy' ? 1 : 1000; state.shadow = { step, dc: {} };
+      for (const d of M.dcs) {
+        const M2 = buildModel(state.preset, specForModel, state.ev, { capDelta: { [d.id]: step } });
+        if (state.preset === 'toy') M2.dcs.find(x => x.id === d.id).cap += step;
+        const p2 = solvePlan(M2, 'mmap'); if (p2.status === 'optimal') state.shadow.dc[d.id] = evaluatePlan(M2, p2.ship).expCost - state.evals.mmap.expCost;
+      }
+    }
+  }
+  state.lastSolveMs = performance.now() - t0;
+  renderAll();
+}
+
+// ---------- rendering
+function renderAll() { renderRules(); renderPlans(); renderTabs(); }
+
+function renderRules() {
+  const L = paraphrase(state.spec);
+  $('#paraphrase').innerHTML = L.map(l => `<li class="${state.assumed.includes(l.k) ? 'assumed' : ''}">${esc(l.t)}</li>`).join('');
+  $('#unsupported').innerHTML = state.unsupported.length ? `<p class="unsupported">Not compiled (the schema can’t express it yet): ${state.unsupported.map(esc).join('; ')}</p>` : '';
+  const miss = missingParams(state.spec);
+  $('#elicit').innerHTML = miss.map((m, i) => `<div class="elicit"><p>${esc(m.q)}</p><div class="opts">${m.opts.map((o, j) => `<button data-el="${i}:${j}">${esc(o[1])}</button>`).join('')}</div></div>`).join('');
+  $('#elicit').querySelectorAll('button[data-el]').forEach(b => b.onclick = () => {
+    const [i, j] = b.dataset.el.split(':').map(Number); const m = miss[i];
+    state.spec[m.param] = clone(m.opts[j][0]); state.assumed = state.assumed.filter(a => a !== m.param);
+    syncSpecJson(); recompute();
+  });
+  syncSpecJson(false);
+}
+function syncSpecJson(force = true) { const ta = $('#specJson'); if (force || document.activeElement !== ta) ta.value = JSON.stringify(state.spec, null, 2); }
+
+function renderEvidence() {
+  const box = $('#evidence');
+  if (state.preset === 'toy') {
+    box.innerHTML = `<p class="note">The toy’s evidence is fixed, as on slide 3: DC B is down to 50 units and S4 demand is 60, 70 or 80 with probabilities 15%, 55% and 30%.</p>`;
+    $('#dataNote').textContent = 'The toy uses the hand-set demand table from the tag-up slides.';
+    $('#csv').disabled = true; return;
+  }
+  $('#csv').disabled = false;
+  $('#dataNote').textContent = PRESETS.storm.custom ? 'Using your loaded M5 aggregates for normal-week demand.' : 'Normal-week demand is synthetic, sized like M5’s 10 stores and 3 categories. Load a CSV of M5 aggregates (store_id, cat_id, weekly_mean, optional cv) to replace it.';
+  const sel = (id, label, opts) => `<label for="ev-${id}">${label}</label><select id="ev-${id}" data-ev="${id}">${opts.map(([v, t]) => `<option value="${v}" ${String(state.ev[id]) === String(v) ? 'selected' : ''}>${t}</option>`).join('')}</select>`;
+  box.innerHTML = `<div class="ev-grid">
+    ${sel('advisory', 'Storm advisory', [['unknown', 'Not reported'], ['none', 'None'], ['watch', 'Watch'], ['warning', 'Warning']])}
+    ${sel('sales', 'TX sales signal', [['unknown', 'Not reported'], ['flat', 'Flat'], ['up', 'Up'], ['sharp', 'Sharply up']])}
+    ${sel('txCap', 'TX DC capacity', [[1, '100% of normal'], [0.7, '70% of normal'], [0.4, '40% of normal']])}
+    ${sel('caLane', 'CA→TX lane', [['open', 'Open'], ['closed', 'Closed']])}
+    ${sel('emergency', 'Emergency', [['unknown', 'Not reported'], ['declared', 'Declared'], ['not_declared', 'Not declared']])}
+    ${sel('week', 'Week type', [['normal', 'Normal'], ['snap', 'SNAP-heavy']])}
+  </div><p class="note" style="margin-top:10px">Each change updates beliefs about the storm and re-solves the plans.</p>`;
+  box.querySelectorAll('select').forEach(s => s.onchange = () => {
+    const id = s.dataset.ev; snapshotPrev(`${s.previousElementSibling.textContent}: ${s.options[s.selectedIndex].text}`);
+    state.ev[id] = id === 'txCap' ? +s.value : s.value; recompute();
+  });
+}
+
+function snapshotPrev(what) {
+  if (state.evals.mmap) state.prev = { what, eval: state.evals.mmap, prioKeys: Object.keys(state.M.prio) };
+}
+
+function planMeta(id) {
+  const tau = state.spec.tau;
+  return {
+    mmap: { name: 'PILLAR plan', sub: `Constrained MMAP: averages over demand, rule held at ${tau != null ? fPct(tau) : 'τ'}` },
+    mpe: { name: 'Most-likely-world plan', sub: 'Plans for the single most likely scenario (MPE)' },
+    llm: { name: 'LLM-only plan', sub: 'Written directly by the LLM, then scored here' }
+  }[id];
+}
+
+function renderPlans() {
+  const box = $('#planRows'); const miss = missingParams(state.spec);
+  const prioKeys = state.M ? Object.keys(state.M.prio) : [];
+  $('#planCaption').textContent = prioKeys.length ? `The priority rule covers ${prioKeys.map(keyLabel).join(', ')}${state.spec.joint && prioKeys.length > 1 ? ', all together' : ''}. Bars show its probability under the composed model; costs are expected costs including shortfall penalties.` : '';
+  document.querySelector('.axis').style.visibility = miss.length ? 'hidden' : 'visible';
+  if (miss.length) { box.innerHTML = `<p class="note" style="padding:14px 0;border-top:1px solid var(--rule)">Answer the question under Compiled rules to solve. The agent won’t guess ${miss.map(m => m.param === 'tau' ? 'the confidence level' : 'shortfall costs').join(' or ')}.</p>`; $('#delta').innerHTML = ''; return; }
+  const tau = state.spec.tau;
+  const rows = ['mmap', 'mpe', 'llm'].filter(id => state.evals[id]).map(id => {
+    const e = state.evals[id], p = state.plans[id], m = planMeta(id);
+    const pAll = e.pAll; const w = Math.max(0, Math.min(1, pAll)) * 100;
+    const inside = w > 30;
+    const flags = [];
+    if (id !== 'llm' && p.status && p.status !== 'optimal') flags.push('Solver: ' + p.status);
+    for (const i of e.issues) flags.push(i);
+    if (e.floorShort.length) flags.push(`Misses the ${fPct(state.spec.floor.fraction)} floor at ${e.floorShort.length} store-categor${e.floorShort.length === 1 ? 'y' : 'ies'}`);
+    if (p.relaxed && p.relaxed.length) flags.push(`Policy can’t be met as written: relaxed ${p.relaxed.map(r => `${r.rule === 'floor' ? 'floor' : 'priority rule'} at ${keyLabel(r.key)} by ${fInt(r.units)}`).slice(0, 3).join('; ')}${p.relaxed.length > 3 ? '…' : ''}`);
+    return `<div class="plan ${id}">
+      <div><div class="name">${m.name}</div><div class="sub">${m.sub}</div>${flags.map(f => `<div class="flag">${esc(f)}</div>`).join('')}</div>
+      <div class="rail" role="img" aria-label="${m.name}: ${fPct(pAll)} probability the rule is met; target ${fPct(tau)}">
+        <div class="fill" style="width:${w}%"></div>
+        <div class="tau" style="left:calc(${tau * 100}% - 1px)"><span>target ${fPct(tau)}</span></div>
+        <div class="val" style="${inside ? `right:${100 - w}%;color:var(--surface)` : `left:${w}%`}">${fPct(pAll)}</div>
+      </div>
+      <div class="nums"><b>${fCost(e.expCost)}</b>expected cost<br>transport ${fCost(e.transport)}</div>
+    </div>`;
+  });
+  box.innerHTML = rows.join('') || '<p class="note">No plan could be solved.</p>';
+  // change since the last evidence or rule update
+  const pv = state.prev, cur = state.evals.mmap;
+  if (pv && cur) {
+    const dq = pv.prioKeys.reduce((a, k) => a + ((cur.q[k] || 0) - (pv.eval.q[k] || 0)), 0);
+    $('#delta').innerHTML = `<p class="delta"><b>After “${esc(pv.what)}”:</b> PILLAR plan sends ${fInt(Math.abs(dq))} ${dq >= 0 ? 'more' : 'fewer'} units to the priority items; probability ${fPct(pv.eval.pAll)} → ${fPct(cur.pAll)}; expected cost ${fCost(pv.eval.expCost)} → ${fCost(cur.expCost)}. Re-conditioned and re-solved in ${Math.round(state.lastSolveMs)} ms.</p>`;
+  } else $('#delta').innerHTML = '';
+}
+
+const TABS = [['diagnosis', 'Diagnosis'], ['ship', 'Shipments'], ['cert', 'Certificate'], ['backtest', 'Backtest'], ['model', 'Model']];
+function renderTabs() {
+  $('#tabs').innerHTML = TABS.map(([id, t]) => `<button role="tab" aria-selected="${state.tab === id}" data-tab="${id}">${t}</button>`).join('');
+  $('#tabs').querySelectorAll('button').forEach(b => b.onclick = () => { state.tab = b.dataset.tab; renderTabs(); });
+  const f = { diagnosis: tabDiagnosis, ship: tabShip, cert: tabCert, backtest: tabBacktest, model: tabModel }[state.tab];
+  $('#tabBody').innerHTML = f(); bindTab();
+}
+function bars(rows) { const mx = Math.max(...rows.map(r => r[1])); return `<div class="bars">${rows.map(([l, v]) => `<span>${esc(l)}</span><div class="bar ${v === mx ? 'best' : ''}"><i style="width:${v * 100}%"></i></div><span class="n">${fPct(v)}</span>`).join('')}</div>`; }
+
+function tabDiagnosis() {
+  const d = state.diag;
+  if (state.preset === 'toy') {
+    return `<h3>What is most likely going on</h3><p>The most likely demand at S4 is <b>70</b> (MPE), with 30% of the mass at 80. A plan conditioned on 70 ignores that 30%.</p>
+      <h3>S4 demand given the evidence</h3>${bars([['60', 0.15], ['70', 0.55], ['80', 0.30]])}`;
+  }
+  const P = PRESETS.storm, post = d.posterior, mpe = d.mpe;
+  const att = d.attribution.length ? `<h3>What moved the beliefs</h3><div class="scroll"><table><thead><tr><th>Evidence</th><th class="n">p(landfall) without → with</th><th class="n">p(high surge) without → with</th></tr></thead><tbody>${d.attribution.map(a => `<tr><td>${esc(a.label)}: ${esc(a.value.replace('_', ' '))}</td><td class="n">${fPct(a.landfallWithout)} → ${fPct(a.landfallWith)}</td><td class="n">${fPct(a.highWithout)} → ${fPct(a.highWith)}</td></tr>`).join('')}</tbody></table></div><p class="note" style="margin-top:6px">Each row removes one piece of evidence and recomputes the posterior exactly. TX DC capacity and lane status are also evidence about the storm.</p>` : '';
+  const txF = Object.keys(state.M.prio).slice(0, 3);
+  return `<h3>Most likely explanation (MPE)</h3>
+    <p>${esc(cap(mpe.label.z))} with ${esc(mpe.label.u)} demand surge, ${mpe.label.e ? 'emergency declared' : 'no emergency declared'}. In that world ${txF.map(k => `${keyLabel(k)} demand is ${fInt(mpe.demand[k])}`).join(', ')}.</p>
+    <p class="note" style="margin-top:4px">This scenario has probability ${fPct(mpe.w)}; the plan has to live with the other ${fPct(1 - mpe.w)} too.</p>
+    <h3>Storm outcome</h3>${bars(P.Z.map((z, i) => [cap(z), post.z[i]]))}
+    <h3>Texas demand surge</h3>${bars(P.U.map((u, i) => [cap(u), post.u[i]]))}
+    <h3>Emergency declared</h3>${bars([['Yes', post.e], ['No', 1 - post.e]])}
+    ${att}`;
+}
+const cap = s => s.charAt(0).toUpperCase() + s.slice(1);
+
+function tabShip() {
+  if (!Object.keys(state.evals).length) return '<p class="note">Solve first: answer the question under Compiled rules.</p>';
+  if (!state.evals[state.shipView]) state.shipView = 'mmap';
+  const id = state.shipView, p = state.plans[id], e = state.evals[id], M = state.M;
+  const seg = `<div class="seg" role="group" aria-label="Plan to show">${['mmap', 'mpe', 'llm'].filter(x => state.evals[x]).map(x => `<button data-ship="${x}" aria-pressed="${x === id}">${planMeta(x).name}</button>`).join('')}</div>`;
+  const from = {}; for (const s of p.ship) { const k = s.store + '|' + s.cat; (from[k] = from[k] || {}); from[k][s.dc] = (from[k][s.dc] || 0) + s.qty; }
+  const head = `<tr><th>Store</th>${M.cats.map(c => `<th class="n">${c === 'units' ? 'Units shipped' : c}</th>`).join('')}</tr>`;
+  const body = M.stores.map(s => `<tr><td>${s}${M.storeState[s] !== '-' ? '' : ''}</td>${M.cats.map(c => { const k = s + '|' + c; const src = from[k] || {}; const pr = M.prio[k] != null; return `<td class="n">${pr ? '<b>' : ''}${fInt(e.q[k])}${pr ? '</b>' : ''}<small>${Object.entries(src).map(([dc, v]) => `${dc.replace('DC_', '')} ${fInt(v)}`).join(' · ')}</small><small>mean demand ${fInt(mean(M.marg[k]))}</small></td>`; }).join('')}</tr>`).join('');
+  const util = M.dcs.map(d => { const u = e.used[d.id] / d.cap; return `<span>${d.id}</span><div class="bar ${u > 0.999 ? 'best' : ''}"><i style="width:${Math.min(1, u) * 100}%"></i></div><span>${fInt(e.used[d.id])} of ${fInt(d.cap)}</span>`; }).join('');
+  return `${seg}<h3>Units shipped by store${M.cats.length > 1 ? ' and category' : ''}</h3><p class="note" style="margin-bottom:8px">Bold cells are under the priority rule. Small lines show which DC ships them and the expected demand.</p><div class="scroll"><table><thead>${head}</thead><tbody>${body}</tbody></table></div>
+    <h3>DC utilization</h3><div class="util">${util}</div>`;
+}
+
+function certificate() {
+  const M = state.M, p = state.plans.mmap, e = state.evals.mmap; if (!e) return null;
+  const rows = [];
+  rows.push(['Plan', `${p.ship.length} lane shipments; ${fInt(p.ship.reduce((a, s) => a + s.qty, 0))} units`, '—']);
+  rows.push(['Hard constraints and floors', e.issues.length||e.floorShort.length ? [...e.issues,...e.floorShort.map(x=>'Floor missed at '+x.key)].join('; ') : 'Capacity, lanes, and floors respected', e.feasible ? 'Checked' : 'Failed']);
+  rows.push(['Probability the priority rule is met', `${fPct(e.pAll)}${e.rules.length > 1 ? ` all together; per store ${e.rules.map(r => `${keyLabel(r.key)} ${fPct(r.p)}`).join(', ')}` : ''}`, 'Exact under the model']);
+  rows.push(['Chance constraint used', `${e.rules.length > 1 && state.spec.joint ? `Conservative allocation: each store at ${fPct(p.tauEach)} (union bound gives ${fPct(state.spec.tau)} jointly)` : `At ${fPct(p.tauEach)}`}; minimum units ${Object.entries(p.threshold).map(([k, v]) => `${keyLabel(k)} ${fInt(v)}`).join(', ')}`, 'Exact']);
+  rows.push(['Expected cost', `${fCost(e.expCost)} (transport ${fCost(e.transport)}, shortfall penalties ${fCost(e.shortPen)})`, 'Exact under the model']);
+  rows.push(['Expected shortfall', `${fInt(e.expShortTotal)} units across all stores`, 'Exact under the model']);
+  rows.push(['Optimality scope', (p.relaxed.length ? 'Optimum of a penalized relaxation; requested rules are not all satisfied.' : (M.spec.joint && e.rules.length>1 ? 'Numerical optimum of the conservative union-bound LP; no global joint-chance gap certificate.' : 'Numerical LP optimum for the supported finite-model formulation.')), 'Numerical']);
+  rows.push(['Binding constraints', e.binding.length ? e.binding.join('; ') : 'None', 'Exact']);
+  if (state.shadow) rows.push([`Value of +${fInt(state.shadow.step)} capacity`, Object.entries(state.shadow.dc).map(([d, v]) => `${d}: ${v <= -0.5 ? 'saves ' + fCost(-v) : 'no saving'}`).join('; '), 'Exact (re-solved)']);
+  if (state.preset === 'storm') {
+    const ex = state.diag.posterior.e; rows.push(['Exception status', state.spec.exception ? `Emergency rule fires with probability ${fPct(ex)}` : 'No exception rule compiled', 'Exact']);
+  }
+  rows.push(['Model caveat', state.preset === 'toy' ? 'Hand-set demand table from the slides' : (PRESETS.storm.custom ? 'Normal-week demand from loaded M5 aggregates; storm effects are synthetic overlay parameters' : 'Demand is synthetic M5-shaped; storm effects are synthetic overlay parameters'), 'Stated']);
+  rows.push(['Solver status', `Two-phase simplex, ${p.nVars} variables × ${p.nRows} constraints, ${p.iterations} pivots`, 'Exact']);
+  return rows;
+}
+function tabCert() {
+  const rows = certificate(); if (!rows) return '<p class="note">Solve first: answer the question under Compiled rules.</p>';
+  return `<h3>Answer certificate for the PILLAR plan</h3><div class="scroll"><table><thead><tr><th>Field</th><th>Value</th><th>Status</th></tr></thead><tbody>${rows.map(r => `<tr><td>${esc(r[0])}</td><td>${esc(r[1])}</td><td><span class="pill ${r[2].startsWith('Exact') ? 'ok' : ''}">${esc(r[2])}</span></td></tr>`).join('')}</tbody></table></div>
+  <p class="note" style="margin-top:8px">“Exact under the model” means exact for the composed model as stated; it is only as good as the model’s calibration.</p>
+  <div class="row" id="dlRow"><button id="dlCert">Download certificate (JSON)</button><span id="dlMsg" class="note"></span></div>`;
+}
+
+function tabBacktest() {
+  if (!state.bt) return '<p class="note">Solve first: answer the question under Compiled rules.</p>';
+  const ids = Object.keys(state.bt);
+  const rows = ids.map(id => `<tr><td>${planMeta(id).name}</td><td class="n">${fPct(state.evals[id].pAll)}</td><td class="n">${fPct(state.bt[id].rate)}</td><td class="n">${fCost(state.bt[id].avgCost)}</td></tr>`).join('');
+  let draw = '';
+  if (state.world) {
+    const w = state.world, M = state.M, pk = Object.keys(M.prio);
+    draw = `<h3>One realized week</h3><p>Storm: ${esc(w.k.label.z)}, surge ${esc(w.k.label.u)}${w.k.label.e ? ', emergency declared' : ''}.</p><div class="scroll"><table><thead><tr><th>Priority item</th><th class="n">Realized demand</th>${ids.map(id => `<th class="n">${planMeta(id).name}</th>`).join('')}</tr></thead><tbody>${pk.map(k => `<tr><td>${keyLabel(k)}</td><td class="n">${fInt(w.d[k])}</td>${ids.map(id => { const q = state.evals[id].q[k]; const ok = q >= w.k.frac[k] * w.d[k] - 1e-9; return `<td class="n">${fInt(q)} <span class="pill ${ok ? 'ok' : 'bad'}">${ok ? 'met' : 'missed'}</span></td>`; }).join('')}</tr>`).join('')}</tbody></table></div>`;
+  }
+  return `<h3>2,000 weeks drawn from the model</h3><div class="scroll"><table><thead><tr><th>Plan</th><th class="n">Predicted p(rule met)</th><th class="n">Realized share met</th><th class="n">Average realized cost</th></tr></thead><tbody>${rows}</tbody></table></div>
+    <p class="note" style="margin-top:8px">Draws come from the same model the plans were solved on, so this checks self-consistency, not real-world calibration. Scoring against held-out M5 weeks needs the real data loaded.</p>
+    <div class="row"><button id="drawWeek">Draw one week</button></div>${draw}`;
+}
+
+function tabModel() {
+  const M = state.M; const p = state.plans.mmap;
+  const nLeaves = M.configs.reduce((a, k) => a + M.sc.reduce((b, key) => b + k.atoms[key].length, 0), 0);
+  let html = `<h3>What is computed, and how</h3><div class="scroll"><table><tbody>
+    <tr><td>Inference</td><td>Exact sum-product evaluation over ${M.configs.length} latent configuration${M.configs.length === 1 ? '' : 's'} with posterior weight, each a product over ${M.sc.length} store-category demand distributions (${fInt(nLeaves)} leaves in total). Posteriors, MPE and rule probabilities are exact for this model.</td></tr>
+    <tr><td>Solver</td><td>${p ? `Linear program, two-phase simplex in the page: ${p.nVars} variables, ${p.nRows} constraints. Chance constraints reduce exactly to minimum-service thresholds; expected shortfall enters as a piecewise-linear term built from the demand distribution.` : 'Not solved yet.'}</td></tr>
+    <tr><td>Last update</td><td>${Math.round(state.lastSolveMs)} ms to rebuild the model, condition on evidence, solve both plans, score them, and value capacity.</td></tr>
+    <tr><td>Where PILLAR differs</td><td>Here the scenario model is small enough to enumerate. In PILLAR the same queries run on a compiled circuit, with the demand model distilled from a trained forecaster.</td></tr>
+    <tr><td>Check against slide 20</td><td id="slideCheck"></td></tr>
+  </tbody></table></div>`;
+  if (state.preset === 'storm') {
+    const P = PRESETS.storm;
+    html += `<h3>Disruption model (illustrative parameters)</h3><div class="scroll"><table><thead><tr><th>Variable</th><th class="n">Miss</th><th class="n">Graze</th><th class="n">Landfall</th></tr></thead><tbody>
+      <tr><td>Prior</td>${P.pZ.map(v => `<td class="n">${fPct(v)}</td>`).join('')}</tr>
+      ${Object.entries(P.pAdv).map(([k, v]) => `<tr><td>Advisory = ${k}</td>${v.map(x => `<td class="n">${fPct(x)}</td>`).join('')}</tr>`).join('')}
+      ${Object.entries(P.pCap).map(([k, v]) => `<tr><td>TX DC at ${fPct(+k)}</td>${v.map(x => `<td class="n">${fPct(x)}</td>`).join('')}</tr>`).join('')}
+      <tr><td>CA→TX lane closed</td>${P.pLaneClosed.map(x => `<td class="n">${fPct(x)}</td>`).join('')}</tr>
+      <tr><td>Emergency declared</td>${P.pEmerg.map(x => `<td class="n">${fPct(x)}</td>`).join('')}</tr>
+      <tr><td>Surge low / medium / high</td>${P.pU.map(r => `<td class="n">${r.map(fPct).join(' / ')}</td>`).join('')}</tr>
+    </tbody></table></div>
+    <p class="note" style="margin-top:8px">Surge raises TX FOODS demand by ${P.surge.map(fPct).join(', ')} (HOUSEHOLD by 80% of that; HOBBIES falls by half of it). The sales signal depends on surge. Store-level noise uses a 5-point distribution with coefficient of variation ${Object.entries(P.cv).map(([c, v]) => `${c} ${fPct(v)}`).join(', ')}.</p>`;
+  }
+  return html;
+}
+function slideCheck() {
+  const out = [];
+  for (const tau of [0.7, 0.9]) { const M = buildModel('toy', { ...PRESETS.toy.defaultSpec, tau }, {}); const p = solvePlan(M, 'mmap'); const e = evaluatePlan(M, p.ship); out.push(`τ = ${fPct(tau)}: transport ${fInt(e.transport)}, S4 gets ${fInt(e.q['S4|units'])}`); }
+  const ok = out[0].includes('transport 421') && out[1].includes('transport 429');
+  return `${out.join('; ')}. Slide 20 reports 421 and 429. <span class="pill ${ok ? 'ok' : 'bad'}">${ok ? 'matches' : 'mismatch'}</span>`;
+}
+function bindTab() {
+  document.querySelectorAll('[data-ship]').forEach(b => b.onclick = () => { state.shipView = b.dataset.ship; renderTabs(); });
+  const dw = $('#drawWeek'); if (dw) dw.onclick = () => { state.world = sampleWorld(state.M, Math.random); renderTabs(); };
+  const sc = $('#slideCheck'); if (sc) sc.innerHTML = slideCheck();
+  const dl = $('#dlCert'); if (dl) { if (!state.downloads) { dl.hidden = true; } dl.onclick = downloadCert; }
+}
+async function downloadCert() {
+  const data = { scenario: PRESETS[state.preset].title, evidence: state.ev, spec: state.spec, certificate: certificate().map(r => ({ field: r[0], value: r[1], status: r[2] })), shipments: state.plans.mmap.ship };
+  try { await state.downloads.save({ filename: 'pillar-certificate.json', data: new TextEncoder().encode(JSON.stringify(data, null, 2)) }); $('#dlMsg').textContent = 'Saved.'; }
+  catch (e) { $('#dlMsg').textContent = e.code === 'declined' ? 'Download cancelled.' : 'Downloads aren’t available here.'; }
+}
+
+// ---------- suggestions
+function renderSuggest() {
+  const s = state.preset === 'toy'
+    ? ['What is going on?', 'What do I do now?', 'What if the confidence is 70%?', 'Why this plan?']
+    : ['What is going on?', 'What do I do now?', 'TX FOODS sales are up this morning.', 'The governor declared an emergency.', 'Can we still meet the Texas rule if the CA lane closes?', 'Why this plan?', 'Treat WI FOODS as priority too.'];
+  $('#suggest').innerHTML = s.map(t => `<button>${esc(t)}</button>`).join('');
+  $('#suggest').querySelectorAll('button').forEach(b => b.onclick = () => { $('#q').value = b.textContent; ask(); });
+}
+
+// ---------- routing: LLM when available, keywords otherwise
+function keywordRoute(q) {
+  const t = q.toLowerCase(); const r = { intent: 'other', evidence: {} };
+  const pct = (t.match(/(\d{2,3})\s*%/) || [])[1];
+  const isIf = /\bif\b|what if|still/.test(t);
+  if (/lane/.test(t) && /clos/.test(t)) { if (isIf) return { intent: 'verify_lane' }; r.evidence.caLane = 'closed'; }
+  if (/lane/.test(t) && /re-?open/.test(t)) r.evidence.caLane = 'open';
+  if (/emergency/.test(t)) r.evidence.emergency = /\bnot\b|\bno\b|n’t|n't/.test(t) ? 'not_declared' : 'declared';
+  if (/sales/.test(t)) { if (/sharp|spik|surg|way up|doubl/.test(t)) r.evidence.sales = 'sharp'; else if (/\bup\b|uptick|higher|rising|jump/.test(t)) r.evidence.sales = 'up'; else if (/flat|normal/.test(t)) r.evidence.sales = 'flat'; }
+  if (/warning/.test(t)) r.evidence.advisory = 'warning'; else if (/\bwatch\b/.test(t)) r.evidence.advisory = 'watch'; else if (/advisory/.test(t) && /lift|cancel|none|no /.test(t)) r.evidence.advisory = 'none';
+  if (/capacity/.test(t) && pct) { const v = +pct / 100; r.evidence.txCap = [1, 0.7, 0.4].reduce((a, b) => Math.abs(b - v) < Math.abs(a - v) ? b : a); }
+  if (Object.keys(r.evidence).length) { r.intent = 'evidence'; return r; }
+  if (/priority/.test(t) && /\b(ca|tx|wi|california|texas|wisconsin)\b/.test(t)) return { intent: 'rule_change', rule_text: q };
+  if (/confiden|\btau\b|τ|sure/.test(t) && pct) return { intent: 'whatif', whatif: { tau: +pct / 100 } };
+  if (/(floor|serve|priority|level)/.test(t) && pct) return { intent: 'whatif', whatif: { priorityFraction: +pct / 100 } };
+  if (/why/.test(t)) return { intent: 'explain' };
+  if (/going on|happen|diagnos|most likely|situation/.test(t)) return { intent: 'diagnose' };
+  if (/what (do|should)|plan|recommend|now\?|ship|decide/.test(t)) return { intent: 'decide' };
+  return r;
+}
+async function llmRoute(q) {
+  const prompt = `Classify an operator's message to a supply-chain replanning agent. Reply with only JSON:
+{"intent": one of "diagnose" (asks what is going on), "decide" (asks what to do or for a plan), "verify_lane" (asks whether the policy still holds IF the CA-to-TX lane closes), "explain" (asks why), "evidence" (reports a new observation), "rule_change" (adds or changes a standing rule or priority), "whatif" (asks about a hypothetical confidence level or priority percentage), "other",
+ "evidence": {optional keys: "advisory": "none"|"watch"|"warning", "sales": "flat"|"up"|"sharp", "txCap": 1|0.7|0.4, "caLane": "open"|"closed", "emergency": "declared"|"not_declared"},
+ "whatif": {optional keys: "tau": number 0-1, "priorityFraction": number 0-1},
+ "rule_text": the rule change in the operator's words, if intent is rule_change}
+Scenario: ${state.preset === 'toy' ? 'toy network with DCs A, B and stores S1-S4' : 'three DCs (CA, TX, WI), ten stores, a storm threatening Texas'}.
+Message: """${q}"""`;
+  const r = await state.sample.json(prompt, { modelTier: 'quick' });
+  if (!r || typeof r.intent !== 'string') throw { code: 'invalid_json' };
+  return r;
+}
+
+// ---------- asking
+async function ask() {
+  const q = $('#q').value.trim(); if (!q || state.busy) return;
+  state.busy = true; $('#askBtn').disabled = true;
+  showAnswer(q, '<span class="spin"></span>Working…', '');
+  let route; let via = 'keywords';
+  try { if (state.sample) { route = await llmRoute(q); via = 'LLM'; } } catch (e) { route = null; }
+  if (!route) route = keywordRoute(q);
+  try { await act(q, route, via); }
+  catch (e) { showAnswer(q, esc('Something failed while answering: ' + (e.message || e.code || e)), ''); }
+  state.busy = false; $('#askBtn').disabled = false;
+}
+
+async function act(q, route, via) {
+  const intent = route.intent;
+  let extra = {};
+  if (intent === 'evidence' && state.preset === 'storm') {
+    const ev = route.evidence || {}; const allowed = { advisory: ['none', 'watch', 'warning'], sales: ['flat', 'up', 'sharp'], txCap: [1, 0.7, 0.4], caLane: ['open', 'closed'], emergency: ['declared', 'not_declared'] };
+    const applied = [];
+    for (const k in ev) if (allowed[k] && allowed[k].map(String).includes(String(ev[k]))) { applied.push(`${k} = ${ev[k]}`); }
+    if (applied.length) {
+      snapshotPrev(q.length > 60 ? q.slice(0, 57) + '…' : q);
+      for (const k in ev) if (allowed[k] && allowed[k].map(String).includes(String(ev[k]))) state.ev[k] = k === 'txCap' ? +ev[k] : ev[k];
+      renderEvidence(); recompute();
+    }
+    extra.update = applied.length ? applied.join(', ') : 'nothing recognized';
+  } else if (intent === 'rule_change') {
+    await changeRule(route.rule_text || q); extra.update = 'rule change compiled';
+  } else if (intent === 'whatif') {
+    const w = route.whatif || {}; snapshotPrev(q.length > 60 ? q.slice(0, 57) + '…' : q);
+    if (w.tau > 0.5 && w.tau <= 1) state.spec.tau = +w.tau;
+    if (w.priorityFraction > 0 && w.priorityFraction <= 1) state.spec.priority.forEach(r => r.fraction = +w.priorityFraction);
+    syncSpecJson(); recompute(); extra.update = 'rule parameters changed';
+  } else if (intent === 'verify_lane' && state.preset === 'storm') {
+    extra.verify = verifyLane();
+  }
+  if (intent === 'diagnose') state.tab = 'diagnosis';
+  else if (intent === 'explain') state.tab = 'cert';
+  renderTabs();
+  const facts = buildFacts(intent, extra);
+  const template = templateAnswer(intent, facts);
+  if (state.sample && !missingParams(state.spec).length) {
+    try {
+      const out = await state.sample(`You are the voice of a supply-chain replanning agent. Answer the operator in 2 to 4 short sentences of plain English, leading with the answer. Use only numbers that appear in FACTS, written exactly as they appear there; do not compute or round new numbers. Do not mention JSON or FACTS.
+Operator: """${q}"""
+FACTS: ${JSON.stringify(facts)}`, { modelTier: 'quick', onText: ({ text }) => showAnswer(q, esc(text), '') });
+      const chk = checkNumbers(out.text, facts);
+      showAnswer(q, chk.html, `Routed by ${via} as “${intent}”. Worded by the LLM; ${chk.bad ? `<b style="color:var(--crit)">${chk.bad} number${chk.bad > 1 ? 's' : ''} not found in the computed facts (highlighted)</b>` : `all ${chk.total} numbers match computed values`}.`);
+      return;
+    } catch (e) { /* fall back to the template */ }
+  }
+  showAnswer(q, esc(template), `Routed by ${via} as “${intent}”. Template answer from computed values.`);
+}
+
+function verifyLane() {
+  const cur = state.plans.mmap; if (!cur || !cur.ship) return null;
+  const evC = { ...state.ev, caLane: 'closed' };
+  const Mc = buildModel(state.preset, state.spec, evC);
+  const kept = cur.ship.filter(s => !(s.dc === 'DC_CA' && s.store.startsWith('TX')));
+  const lost = cur.ship.filter(s => s.dc === 'DC_CA' && s.store.startsWith('TX')).reduce((a, s) => a + s.qty, 0);
+  const eKept = evaluatePlan(Mc, kept);
+  const re = solvePlan(Mc, 'mmap'); const eRe = re.status === 'optimal' ? evaluatePlan(Mc, re.ship) : null;
+  return { lostUnits: lost, keptP: eKept.pAll, replanP: eRe ? eRe.pAll : null, replanCost: eRe ? eRe.expCost : null, replanRelaxed: re.relaxed || [] };
+}
+
+function buildFacts(intent, extra) {
+  const M = state.M, d = state.diag, f = { scenario: PRESETS[state.preset].title };
+  const miss = missingParams(state.spec); if (miss.length) { f.waiting_for = miss.map(m => m.q); return f; }
+  f.target_probability = fPct(state.spec.tau);
+  f.priority_items = Object.keys(M.prio).map(keyLabel);
+  if (state.preset === 'storm') {
+    const P = PRESETS.storm;
+    f.most_likely_explanation = `${d.mpe.label.z}, ${d.mpe.label.u} surge, ${d.mpe.label.e ? 'emergency declared' : 'no emergency'}`;
+    f.probability_of_that_explanation = fPct(d.mpe.w);
+    f.storm_outcome_probabilities = Object.fromEntries(P.Z.map((z, i) => [z, fPct(d.posterior.z[i])]));
+    f.surge_probabilities = Object.fromEntries(P.U.map((u, i) => [u, fPct(d.posterior.u[i])]));
+    f.probability_emergency = fPct(d.posterior.e);
+    if (d.attribution.length) f.evidence_effects = d.attribution.map(a => `${a.label} (${a.value}) moved p(landfall) from ${fPct(a.landfallWithout)} to ${fPct(a.landfallWith)}`);
+  } else { f.most_likely_explanation = 'S4 demand of 70'; f.probability_of_that_explanation = '55%'; f.demand_tail = '30% chance S4 demand is 80'; }
+  const planFacts = id => { const e = state.evals[id]; if (!e) return undefined; return { probability_rule_met: fPct(e.pAll), expected_cost: fCost(e.expCost), transport_cost: fCost(e.transport), units_to_priority_items: fInt(Object.keys(M.prio).reduce((a, k) => a + e.q[k], 0)), feasible: e.feasible ? 'yes' : 'no: ' + [...e.issues, ...e.floorShort.map(x => 'floor missed at ' + keyLabel(x.key))].join('; ') }; };
+  f.pillar_plan = planFacts('mmap'); f.most_likely_world_plan = planFacts('mpe'); if (state.evals.llm) f.llm_only_plan = planFacts('llm');
+  if (state.evals.mmap) {
+    f.pillar_binding_constraints = state.evals.mmap.binding.slice(0, 5);
+    f.pillar_minimum_units_per_priority_item = Object.fromEntries(Object.entries(state.plans.mmap.threshold).map(([k, v]) => [keyLabel(k), fInt(v)]));
+    if (state.plans.mmap.relaxed.length) f.rules_relaxed_because_infeasible = state.plans.mmap.relaxed.map(r => `${r.rule} at ${keyLabel(r.key)} by ${fInt(r.units)} units`);
+    if (state.shadow) f.value_of_extra_capacity = Object.fromEntries(Object.entries(state.shadow.dc).map(([dc, v]) => [`${dc} +${fInt(state.shadow.step)} units`, v <= -0.5 ? 'saves ' + fCost(-v) : 'no saving']));
+  }
+  if (state.prev && state.evals.mmap && (intent === 'evidence' || intent === 'whatif' || intent === 'rule_change')) {
+    const pv = state.prev, cur = state.evals.mmap; const dq = pv.prioKeys.reduce((a, k) => a + ((cur.q[k] || 0) - (pv.eval.q[k] || 0)), 0);
+    f.change_since_last_plan = { trigger: pv.what, units_to_priority_items_change: (dq >= 0 ? '+' : '−') + fInt(Math.abs(dq)), probability_before: fPct(pv.eval.pAll), probability_after: fPct(cur.pAll), expected_cost_before: fCost(pv.eval.expCost), expected_cost_after: fCost(cur.expCost), solve_time: Math.round(state.lastSolveMs) + ' ms' };
+  }
+  if (extra.update) f.applied_update = extra.update;
+  if (extra.verify) { const v = extra.verify; f.if_ca_lane_closes = { units_lost_from_current_plan: fInt(v.lostUnits), current_plan_probability_rule_met: fPct(v.keptP), replanned_probability_rule_met: v.replanP != null ? fPct(v.replanP) : 'no feasible plan', replanned_expected_cost: v.replanCost != null ? fCost(v.replanCost) : 'n/a', note: 'conditioning on the closure also raises the belief in landfall' }; }
+  return f;
+}
+
+function templateAnswer(intent, f) {
+  if (f.waiting_for) return `Before I can plan, I need one more parameter: ${f.waiting_for.join(' ')}`;
+  const pp = f.pillar_plan, mp = f.most_likely_world_plan;
+  const decide = pp ? `Use the PILLAR plan: it meets the priority rule with probability ${pp.probability_rule_met} (target ${f.target_probability}) at expected cost ${pp.expected_cost}. Planning for the most likely world (${f.most_likely_explanation}) meets it with probability ${mp ? mp.probability_rule_met : 'n/a'} at expected cost ${mp ? mp.expected_cost : 'n/a'}.` : 'No plan could be solved.';
+  if (intent === 'diagnose') return `Most likely: ${f.most_likely_explanation} (probability ${f.probability_of_that_explanation}).` + (f.storm_outcome_probabilities ? ` Storm outcome: miss ${f.storm_outcome_probabilities.miss}, graze ${f.storm_outcome_probabilities.graze}, landfall ${f.storm_outcome_probabilities.landfall}. Emergency declared: ${f.probability_emergency}.` : ` But there is a ${f.demand_tail}.`);
+  if (intent === 'explain') return `${decide} The plan is shaped by: ${(f.pillar_binding_constraints || []).join('; ') || 'no binding capacity'}. Each priority item gets at least ${Object.entries(f.pillar_minimum_units_per_priority_item || {}).map(([k, v]) => `${v} units at ${k}`).join(', ')}, the smallest amounts that meet the rule.`;
+  if (intent === 'verify_lane' && f.if_ca_lane_closes) { const v = f.if_ca_lane_closes; return `If the CA→TX lane closes, the current plan loses ${v.units_lost_from_current_plan} units and meets the Texas rule with probability ${v.current_plan_probability_rule_met}. Replanning with the lane closed gets ${v.replanned_probability_rule_met} at expected cost ${v.replanned_expected_cost}.`; }
+  if (f.change_since_last_plan) { const c = f.change_since_last_plan; return `Updated (${f.applied_update}). ${decide} Compared with before: ${c.units_to_priority_items_change} units to the priority items, probability ${c.probability_before} → ${c.probability_after}, expected cost ${c.expected_cost_before} → ${c.expected_cost_after}.`; }
+  return decide;
+}
+
+// numbers in the LLM's text must appear in the computed facts
+function checkNumbers(text, facts) {
+  const allowed = new Set();
+  const norm = s => s.replace(/[,\s]/g, '').replace(/[%k]$/i, '').replace(/^[+−-]/, '');
+  (function walk(o) { if (o == null) return; if (typeof o === 'object') { for (const k in o) { walk(k); walk(o[k]); } return; } String(o).replace(/\d[\d,]*(\.\d+)?/g, m => { allowed.add(norm(m)); return m; }); })(facts);
+  let bad = 0, total = 0;
+  const html = esc(text).replace(/\d[\d,]*(\.\d+)?\s?(%|k\b)?/g, m => {
+    const n = norm(m.trim()); total++;
+    if (allowed.has(n) || (/^\d+$/.test(n) && +n <= 10) || /^(19|20)\d\d$/.test(n)) return m;
+    bad++; return `<mark title="Not in the computed facts">${m}</mark>`;
+  });
+  return { html, bad, total };
+}
+
+function showAnswer(q, html, meta) {
+  const a = $('#answer'); a.classList.remove('empty');
+  a.innerHTML = `<div class="q">${esc(q)}</div><div class="a">${html}</div>${meta ? `<div class="meta">${meta}</div>` : ''}`;
+}
+
+// ---------- LLM: compile rules
+const SPEC_SCHEMA = `{"spec": {"priority": [{"stores": [store ids], "category": category id, "fraction": number between 0 and 1}], "floor": {"fraction": number} or null, "exception": {"when": "emergency_declared", "fraction": number} or null, "crossStateMultiplier": number or null, "penalties": {"priority": number, "other": number} or null, "tau": number between 0.5 and 1 or null, "joint": boolean}, "unsupported": [short quotes of operator statements this schema cannot express], "assumed": [names of spec fields whose values you inferred rather than read directly]}`;
+function vocab() { const P = PRESETS[state.preset]; return `stores: ${P.stores.map(s => s.id).join(', ')}\ncategories: ${P.cats.join(', ')}${state.preset === 'storm' ? '\nStore ids start with their state (CA, TX, WI).' : ''}`; }
+function specRules() { return `Rules:
+- Never invent a number. If the text gives no confidence level for the priority rule, "tau" is null. If it gives no shortfall costs, "penalties" is null.
+- "joint" is true only if the text says the rule must hold for all listed stores together.
+- Capacities, lane availability and demand come from network data, not from this spec; ignore them.
+- Reply with only the JSON object.`; }
+async function translate() {
+  const btn = $('#translateBtn'), st = $('#translateStatus');
+  
+  btn.disabled = true; st.innerHTML = '<span class="spin"></span>Compiling with the LLM…';
+  const text = $('#knowledge').value;
+  try {
+    const r = await chatgpt.json(`Convert an operator's supply-chain knowledge into a JSON spec that a solver compiles.\n\nVocabulary (use exactly these ids):\n${vocab()}\n\nReply in this shape:\n${SPEC_SCHEMA}\n\n${specRules()}\n\nOperator text:\n"""${text}"""`, { modelTier: 'default' });
+    applyCompiled(r, 'Compiled');
+  } catch (e) { st.textContent = e.code === 'not_granted' ? 'ChatGPT handoff was cancelled. You can still edit the spec directly.' : 'Compilation failed (' + (e.code || 'error') + '). Try again, or edit the spec directly.'; }
+  btn.disabled = false;
+}
+async function changeRule(instruction) {
+  if (state.sample) {
+    try {
+      const r = await state.sample.json(`Apply an operator's change to a supply-chain policy spec. Return the full updated spec.\n\nVocabulary:\n${vocab()}\n\nCurrent spec:\n${JSON.stringify(state.spec)}\n\nReply in this shape:\n${SPEC_SCHEMA}\n\n${specRules()}\n- Keep every current value the change does not touch.\n\nChange requested:\n"""${instruction}"""`, { modelTier: 'default' });
+      snapshotPrev(instruction.length > 60 ? instruction.slice(0, 57) + '…' : instruction); applyCompiled(r, 'Rule change compiled'); return;
+    } catch (e) { /* fall through */ }
+  }
+  // keyword fallback: add a priority rule for a state’s stores
+  const t = instruction.toLowerCase(); const st = (t.match(/\b(ca|tx|wi)\b/) || [])[1] || ({ california: 'ca', texas: 'tx', wisconsin: 'wi' }[(t.match(/california|texas|wisconsin/) || [])[0]]);
+  if (st && state.preset === 'storm') {
+    const cat = (t.match(/foods|household|hobbies/) || ['foods'])[0].toUpperCase();
+    const pct = (t.match(/(\d{2,3})\s*%/) || [])[1];
+    snapshotPrev(instruction);
+    state.spec.priority.push({ stores: PRESETS.storm.stores.filter(s => s.state === st.toUpperCase()).map(s => s.id), category: cat, fraction: pct ? +pct / 100 : (state.spec.priority[0]?.fraction || 0.9) });
+    syncSpecJson(); recompute();
+  }
+}
+function applyCompiled(r, label) {
+  const raw = r && r.spec ? r.spec : r; const { spec, errs } = validateSpec(raw);
+  const st = $('#translateStatus');
+  if (!spec || !spec.priority.length) { st.textContent = 'The LLM’s output didn’t compile: ' + errs.join(' '); return; }
+  state.spec = spec; state.unsupported = Array.isArray(r.unsupported) ? r.unsupported.map(String).slice(0, 6) : [];
+  state.assumed = Array.isArray(r.assumed) ? r.assumed.map(String) : [];
+  st.textContent = `${label}. Check the paraphrase below; it is generated from what was compiled, not written by the LLM.${errs.length ? ' Warnings: ' + errs.join(' ') : ''}`;
+  syncSpecJson(); recompute();
+}
+
+// ---------- LLM-only baseline
+async function llmPlan() {
+  const btn = $('#llmPlanBtn');
+  
+  if (missingParams(state.spec).length) { showAnswer('Ask ChatGPT to plan directly', 'Answer the question under Compiled rules first.', ''); return; }
+  const M = state.M; btn.disabled = true; btn.innerHTML = '<span class="spin"></span>LLM is planning…';
+  const laneLines = state.preset === 'toy' ? M.lanes.map(L => `${L.dc}→${L.store}: ${L.cost}`).join(', ')
+    : (() => { const g = {}; for (const L of M.lanes) { const k = `${L.dc}→${M.storeState[L.store]} stores`; g[k] = L.cost; } return Object.entries(g).map(([k, v]) => `${k}: ${v}`).join(', ') + (state.ev.caLane === 'closed' ? ' (DC_CA→TX is CLOSED)' : ''); })();
+  const fc = M.sc.map(k => `${keyLabel(k)}: mean ${fInt(mean(M.marg[k]))} (10th–90th percentile ${fInt(quantile(M.marg[k], 0.1))}–${fInt(quantile(M.marg[k], 0.9))}); normal-week forecast ${fInt(M.forecast[k])}`).join('\n');
+  const evText = state.preset === 'toy' ? 'DC B capacity dropped to 50. S4 demand is 60, 70 or 80 with probabilities 0.15, 0.55, 0.30.' : `Advisory: ${state.ev.advisory}; TX sales signal: ${state.ev.sales}; TX DC at ${state.ev.txCap * 100}% capacity; CA→TX lane ${state.ev.caLane}; emergency: ${state.ev.emergency}.`;
+  const prompt = `Plan this week's shipments for a supply network under disruption. Decide how many units each DC ships to each store${M.cats.length > 1 ? ' and category' : ''}.
+
+Operator knowledge:
+${$('#knowledge').value}
+
+Compiled policy:
+${paraphrase(state.spec).map(l => '- ' + l.t).join('\n')}
+
+Current evidence: ${evText}
+
+DC capacities (units, hard limits): ${M.dcs.map(d => `${d.id} ${d.cap}`).join(', ')}
+Lane cost per unit: ${laneLines}
+Demand this week given the evidence:
+${fc}
+
+Reply with only JSON: {"ship": [{"dc": "${M.dcs[0].id}", "store": "${M.stores[0]}", "cat": "${M.cats[0]}", "qty": 100}], "rationale": "one sentence"}. List every shipment with qty above zero.`;
+  try {
+    const r = await chatgpt.json(prompt, { modelTier: 'default', cache: false });
+    if (!Array.isArray(r.ship)) throw { code: 'missing_shipments' };
+    for (const s of r.ship) if (!M.dcs.some(d=>d.id===s.dc) || !M.stores.includes(s.store) || !M.cats.includes(s.cat) || !Number.isFinite(s.qty) || s.qty<0) throw {code:'invalid_shipment'};
+    const ship = r.ship.map(s => ({dc:s.dc,store:s.store,cat:s.cat,qty:s.qty})).filter(s => s.qty > 0);
+    if (!ship.length) throw { code: 'empty' };
+    state.llmPlan = { status: 'proposed', ship, rationale: String(r.rationale || '') };
+    recompute();
+    showAnswer('Ask ChatGPT to plan directly', esc(`The LLM proposed ${ship.length} shipments. Scored under the same model: probability the rule is met ${fPct(state.evals.llm.pAll)}, expected cost ${fCost(state.evals.llm.expCost)}${state.evals.llm.feasible ? '' : '; it breaks hard constraints or floors'}. Its stated rationale: “${state.llmPlan.rationale}”`), 'The plan is the LLM’s; every number here is computed by the engine.');
+  } catch (e) { showAnswer('Ask ChatGPT to plan directly', esc('The LLM’s plan couldn’t be read (' + (e.code || 'error') + '). Try again.'), ''); }
+  btn.disabled = false; btn.textContent = state.llmPlan ? 'Ask ChatGPT to plan again' : 'Ask ChatGPT to plan directly';
+}
+
+// ---------- CSV of M5 aggregates
+function loadCsv(file) {
+  const rd = new FileReader();
+  rd.onload = () => {
+    const lines = String(rd.result).split(/\r?\n/).filter(l => l.trim()); const head = lines.shift().split(',').map(h => h.trim().toLowerCase());
+    const iS = head.indexOf('store_id'), iC = head.indexOf('cat_id'), iM = head.indexOf('weekly_mean'), iV = head.indexOf('cv');
+    if (iS < 0 || iC < 0 || iM < 0) { $('#csvMsg').textContent = 'Needs columns store_id, cat_id, weekly_mean (and optionally cv).'; return; }
+    const custom = { base: {}, cv: {} }; let n = 0;
+    for (const l of lines) { const c = l.split(','); const k = c[iS].trim() + '|' + c[iC].trim(); const m = +c[iM]; if (PRESETS.storm.stores.some(s => s.id === c[iS].trim()) && PRESETS.storm.cats.includes(c[iC].trim()) && m > 0) { custom.base[k] = m; if (iV >= 0 && +c[iV] > 0) custom.cv[k] = +c[iV]; n++; } }
+    if (!n) { $('#csvMsg').textContent = 'No rows matched the 10 M5 stores and 3 categories.'; return; }
+    PRESETS.storm.custom = custom; $('#csvMsg').textContent = `Loaded ${n} of 30 store-category rows.`; renderEvidence(); recompute();
+  };
+  rd.readAsText(file);
+}
+
+// ---------- boot
+function loadPreset(id) {
+  state.preset = id; const P = PRESETS[id];
+  state.spec = clone(P.defaultSpec); state.ev = { ...DEFAULT_EVIDENCE }; state.llmPlan = null; state.prev = null; state.world = null; state.assumed = []; state.unsupported = [];
+  $('#knowledge').value = P.knowledge; $('#translateStatus').textContent = ''; $('#llmPlanBtn').textContent = 'Ask ChatGPT to plan directly';
+  $('#answer').className = 'answer empty'; $('#answer').innerHTML = `<div class="a">${id === 'storm' ? 'Start by answering the question under Compiled rules, then ask “What is going on?”' : 'This is the slide-3 toy. Ask “What do I do now?” and compare with slide 7.'}</div>`;
+  renderEvidence(); renderSuggest(); recompute();
+}
+$('#preset').onchange = e => loadPreset(e.target.value);
+$('#translateBtn').onclick = translate;
+$('#resetKnow').onclick = () => { $('#knowledge').value = PRESETS[state.preset].knowledge; };
+$('#applySpec').onclick = () => { try { const { spec, errs } = validateSpec(JSON.parse($('#specJson').value)); if (!spec || !spec.priority.length) { $('#specErr').textContent = errs.join(' '); return; } snapshotPrev('spec edited'); state.spec = spec; state.assumed = []; $('#specErr').textContent = errs.join(' '); recompute(); } catch (e) { $('#specErr').textContent = 'That isn’t valid JSON: ' + e.message; } };
+$('#askBtn').onclick = ask;
+$('#q').addEventListener('keydown', e => { if (e.key === 'Enter') ask(); });
+$('#llmPlanBtn').onclick = llmPlan;
+$('#csv').onchange = e => { if (e.target.files[0]) loadCsv(e.target.files[0]); };
+loadPreset('storm');
+
+
+const chatgpt=createChatGPTBridge();
+state.downloads={save:async({filename,data})=>chatgpt.download(filename,data,'application/json')};
+$('#chatgptSetup').onclick=()=>chatgpt.showInfo();
+(async()=>{const connected=await chatgpt.ready();state.sample=connected?chatgpt.sample:null;const status=$('#llmStatus');status.textContent=connected?'ChatGPT API connected':'ChatGPT handoff ready';status.classList.add('on');renderTabs();})();
+
+</script>
+<script>/* Shared, browser-local forecasting and decision evaluation. No remote model calls. */
+(function(){
+const API={};
+function rng(seed){return()=>{seed|=0;seed=seed+0x6D2B79F5|0;let t=Math.imul(seed^seed>>>15,1|seed);t^=t+Math.imul(t^t>>>7,61|t);return((t^t>>>14)>>>0)/4294967296;};}
+API.synthetic=function(kind){const r=rng(42),out=[];for(let t=0;t<80;t++){const common=r()<.2?1.5:.9;const x=[40,55,65].map(m=>Math.round(m*(kind==='independent'?(r()<.2?1.5:.9):common)*(0.95+.1*r())*(kind==='shift'&&t>=56?1.35:1)));out.push({date:String(t+1).padStart(3,'0'),x});}return {rows:out,stores:['Store A','Store B','Store C'],source:'Synthetic '+kind+' demand, seed 42'};};
+API.parse=function(raw){const lines=raw.trim().split(/\r?\n/).map(l=>l.split(',').map(v=>v.trim()));const h=lines.shift();const d=h.indexOf('date'),s=h.indexOf('store_id'),v=h.indexOf('demand');if([d,s,v].some(i=>i<0))throw Error('CSV needs date,store_id,demand columns. Aggregate one category to one observation per date/store.');const stores=[...new Set(lines.map(l=>l[s]))].sort();if(stores.length!==3)throw Error('This reference evaluation supports exactly three stores.');const by=new Map();for(const l of lines){if(!l[d]||!Number.isFinite(+l[v])||+l[v]<0)throw Error('Invalid date or nonnegative demand.');if(!by.has(l[d]))by.set(l[d],{});if(by.get(l[d])[l[s]]!==undefined)throw Error('Duplicate date/store. Aggregate categories before upload.');by.get(l[d])[l[s]]=+l[v];}const rows=[...by].sort(([a],[b])=>a.localeCompare(b)).map(([date,o])=>{if(stores.some(s=>o[s]===undefined))throw Error('Each date needs all three stores.');return{date,x:stores.map(s=>o[s])};});if(rows.length<20||rows.length>160)throw Error('Use 20–160 dates for this small exact reference model.');return {rows,stores,source:'Uploaded demand observations (provenance supplied by user)'};};
+API.rules=function(o){const keys=Object.keys(o).sort().join(',');if(keys!=='base_floor,emergency,priority_floor'||typeof o.emergency!=='boolean'||![o.base_floor,o.priority_floor].every(n=>typeof n==='number'&&n>0&&n<=1))throw Error('Rules require only priority_floor and base_floor in (0,1], and boolean emergency.');return o;};
+API.fit=function(data){const cut=Math.floor(data.rows.length*.7),train=data.rows.slice(0,cut),test=data.rows.slice(cut),mean=[0,1,2].map(j=>train.reduce((a,r)=>a+r.x[j],0)/train.length);return {train,test,mean,cut};};
+API.solve=function(f,rules,uncertain,capacity,dependence='joint'){const floor=rules.emergency?.8:rules.priority_floor;const samples=uncertain?f.train.map(r=>r.x):[f.mean];const levels=[0,1,2].map(j=>[...new Set([Math.ceil(rules.base_floor*f.mean[j]),...samples.flatMap(x=>[Math.ceil(floor*x[j]),Math.floor(x[j]),Math.ceil(x[j])].map(v=>Math.max(Math.ceil(rules.base_floor*f.mean[j]),v)))])].sort((a,b)=>a-b));let best=null,maxP=0;for(const a of levels[0])for(const b of levels[1])for(const c of levels[2]){const x=[a,b,c],sum=a+b+c;if(sum>capacity)continue;let prob=dependence==='independent'&&uncertain?[0,1,2].reduce((p,j)=>p*samples.filter(v=>x[j]+1e-8>=floor*v[j]).length/samples.length,1):samples.filter(v=>v.every((d,j)=>x[j]+1e-8>=floor*d)).length/samples.length;maxP=Math.max(maxP,prob);if(prob<.95-1e-9)continue;const shortage=samples.reduce((z,v)=>z+v.reduce((q,d,j)=>q+Math.max(0,d-x[j]),0),0)/samples.length,cost=sum+8*shortage;if(!best||cost<best.cost-1e-8)best={x,cost,prob};}if(!best)return {best:null,maxP};const refFloor=.9;return {best,maxP,violation:f.test.filter(r=>r.x.some((d,j)=>best.x[j]+1e-8<refFloor*d)).length/f.test.length,realCost:best.x.reduce((a,b)=>a+b,0)+8*f.test.reduce((q,r)=>q+r.x.reduce((a,d,j)=>a+Math.max(0,d-best.x[j]),0),0)/f.test.length};};
+API.run=function(data,rules,capacity,dependence){const f=API.fit(data);return {f,point:API.solve(f,rules,false,capacity),uncertain:API.solve(f,rules,true,capacity,dependence)};};
+globalThis.PillarEvaluation=API;
+if(typeof document==='undefined')return;
+const section=document.createElement('section');section.id='evaluation';section.innerHTML=`<style>
+#evaluation{font:16px/1.5 system-ui,sans-serif;background:#f4f8fb;color:#193248;padding:40px clamp(16px,5vw,80px);border-top:3px solid #008987;scroll-margin-top:12px}#evaluation *{box-sizing:border-box}#evaluation h2{font-size:30px;margin:0 0 10px}#evaluation h3{font-size:20px;margin:24px 0 8px}#evaluation label{display:block;margin:10px 0}#evaluation select,#evaluation input,#evaluation textarea{font:inherit;padding:9px;border:1px solid #9bafbd;border-radius:5px;background:white;color:#193248;max-width:100%}#evaluation textarea{width:100%;min-height:84px}#evaluation button,#evaluation a.eval-btn{display:inline-block;font:inherit;background:#007f82;color:white;border:0;padding:10px 16px;border-radius:5px;margin:5px 8px 5px 0;cursor:pointer;text-decoration:none}#evaluation table{width:100%;border-collapse:collapse;background:white;font-size:14px}#evaluation th,#evaluation td{padding:10px;text-align:left;border-bottom:1px solid #ccd7df}#evaluation .eval-scroll{overflow:auto}#evaluation .eval-status{padding:12px;background:#e5f3f3}#evaluation .eval-grid{display:grid;grid-template-columns:1fr 1fr;gap:32px}#evaluation small{display:block;color:#50687a}#evaluation pre{white-space:pre-wrap} @media(max-width:800px){#evaluation .eval-grid{grid-template-columns:1fr}}
+</style><h2>Forecasting, translation, and decisions</h2><p>Compare components separately using a three-store reference stocking problem. The original shipment demo above remains available.</p><p><a href='#evaluation-data'>Demand model</a> · <a href='#evaluation-rules'>Rule translation</a> · <a href='#evaluation-results'>Comparison results</a></p><div class='eval-grid'><div id='evaluation-data'><h3>1. Demand observations</h3><label>Dataset <select id='ev-dataset'><option value='correlated'>Synthetic correlated demand</option><option value='independent'>Synthetic independent demand</option><option value='shift'>Synthetic demand shift in test period</option></select></label><label>Upload original M5-derived or other demand observations <input id='ev-file' type='file' accept='.csv,text/csv'></label><small>CSV: date,store_id,demand. Exactly three stores, 20–160 dates, one category, consistent time intervals. ISO dates sort chronologically. The bundled CSV of means/CVs is not training data.</small><button id='ev-template'>Download observation template</button><label>Distribution <select id='ev-dependence'><option value='joint'>Learned empirical joint distribution</option><option value='independent'>Independent empirical marginals</option></select></label><label>Total inventory capacity <input id='ev-capacity' type='number' min='1' max='10000' value='240'></label><p id='ev-provenance'></p></div><div id='evaluation-rules'><h3>2. Reference and LLM rules</h3><textarea id='ev-instructions' aria-label='Operator instructions'>Serve at least 90% of actual demand at all three stores together with at least 95% probability. Every store receives at least 60% of its training-mean forecast. No emergency is declared.</textarea><small>Fixed reference: priority_floor 0.9, base_floor 0.6, emergency false. Editing the instructions changes the translation task only. To compare a different policy, the reference must be revised in a future version.</small><button id='ev-copy'>Copy translation prompt</button><a class='eval-btn' href='https://chatgpt.com/' target='_blank' rel='noopener'>Open ChatGPT</a><textarea id='ev-json' aria-label='Paste ChatGPT JSON' placeholder='Paste actual ChatGPT output: {"priority_floor":0.9,"base_floor":0.6,"emergency":false}'></textarea><small>Explicit copy/paste handoff. No simulated LLM response and no API integration. Missing translations remain unevaluated.</small></div></div><button id='ev-run'>Run paired comparison</button><button id='ev-export'>Export evaluation JSON</button><p id='ev-status' class='eval-status' role='status'></p><div id='evaluation-results'><h3>3. Results on the same held-out dates</h3><div class='eval-scroll'><table><thead><tr><th>Rules</th><th>Demand</th><th>Units by store</th><th>Model compliance</th><th>Test violation rate</th><th>Test cost</th></tr></thead><tbody id='ev-results'></tbody></table></div><p id='ev-metrics'></p><pre id='ev-diagnosis'></pre><small>First 70% of dates train both forecasts; last 30% test decisions. Point forecast = per-store training mean. Distribution = empirical training vectors, with no test data fitting. Joint policy requires all three stores to satisfy the floor together. Cost = units supplied + 8 × expected shortfall. Test violations always use the reference 90% rule, so mistranslations cannot redefine success. An emergency translation applies an 80% floor in planning. The finite candidate search enumerates demand breakpoints exactly for this model; this is a small stocking reference, not a full M5 competition model or the original network optimizer. Predicted compliance is model-relative and is not a statistical guarantee.</small></div>`;
+document.body.append(section);const nav=document.createElement('a');nav.href='#evaluation';nav.textContent='Open component evaluation';nav.style='position:fixed;bottom:18px;right:18px;background:#007f82;color:white;padding:12px 18px;border-radius:6px;z-index:90;font:15px system-ui;box-shadow:0 3px 15px #0003';document.body.append(nav);
+const el=id=>document.getElementById('ev-'+id);let data=API.synthetic('correlated'),last=null;const ref={priority_floor:.9,base_floor:.6,emergency:false};
+function render(){try{const capacity=+el('capacity').value;if(!Number.isFinite(capacity)||capacity<=0)throw Error('Enter a positive finite capacity.');const f=API.fit(data);let rules=null;const raw=el('json').value.trim();if(raw)rules=API.rules(JSON.parse(raw.replace(/^```(?:json)?\s*|\s*```$/g,'')));const configs=[['Reference',ref],['ChatGPT',rules]],rows=[];for(const [name,r]of configs)for(const u of [false,true])rows.push({name,demand:u?'Empirical distribution':'Point mean',result:r?API.solve(f,r,u,capacity,el('dependence').value):null});el('results').innerHTML='';for(const row of rows){const tr=document.createElement('tr');const b=row.result?.best;const vals=[row.name,row.demand,row.result?(b?b.x.join(' / '):'Infeasible'):'Awaiting translation',b?(100*b.prob).toFixed(1)+'%':'—',b?(100*row.result.violation).toFixed(1)+'%':'—',b?row.result.realCost.toFixed(2):'—'];for(const v of vals){const td=document.createElement('td');td.textContent=v;tr.append(td);}el('results').append(tr);}const mae=f.test.reduce((a,r)=>a+r.x.reduce((b,d,j)=>b+Math.abs(d-f.mean[j]),0),0)/(3*f.test.length);el('metrics').textContent=`Training: ${f.train.length} dates. Test: ${f.test.length} dates. Stores: ${data.stores.join(', ')}. Point forecast MAE: ${mae.toFixed(2)} units. Translation: ${rules?(JSON.stringify(rules)===JSON.stringify(ref)?'matches reference':Object.keys(ref).every(k=>rules[k]===ref[k])?'matches reference':'DIFFERS from reference'):'not submitted'}.`;const result=rows[1].result;el('diagnosis').textContent=result.best?`Distribution-plan failure dates: ${f.test.filter(r=>r.x.some((d,j)=>result.best.x[j]<.9*d-1e-8)).map(r=>r.date).join(', ')||'none'}.\nRepair: increase capacity or add supply if the plan is infeasible. Rerun to verify.`:`No feasible plan under the selected capacity. Highest candidate model compliance: ${(100*result.maxP).toFixed(1)}%. Increase capacity and rerun.`;el('provenance').textContent=data.source+(data.source.startsWith('Synthetic')?'. Not a vanilla M5 result.':'. This is a simple mean/empirical baseline, not an official M5 benchmark score.');el('status').textContent='Comparison complete. Forecasting uses training observations only.';last={dataset:data.source,stores:data.stores,trainDates:f.train.map(r=>r.date),testDates:f.test.map(r=>r.date),referenceRules:ref,llmRules:rules,dependence:el('dependence').value,capacity,rows,mae};}catch(e){el('status').textContent=e.message;last=null;}}
+el('dataset').onchange=()=>{data=API.synthetic(el('dataset').value);el('file').value='';render();};el('file').onchange=async()=>{try{data=API.parse(await el('file').files[0].text());render();}catch(e){el('status').textContent=e.message;}};el('run').onclick=render;el('dependence').onchange=render;function download(name,content,type){const a=document.createElement('a');a.href=URL.createObjectURL(new Blob([content],{type}));a.download=name;a.click();setTimeout(()=>URL.revokeObjectURL(a.href),500);}
+el('template').onclick=()=>download('synthetic_observations_template.csv','date,store_id,demand\n'+data.rows.map(r=>r.x.map((d,j)=>[r.date,data.stores[j],d].join(',')).join('\n')).join('\n'),'text/csv');el('copy').onclick=async()=>{const prompt='Translate the operator instructions below into JSON only, exactly these fields: priority_floor (fraction), base_floor (fraction), emergency (boolean). Do not propose an allocation. This schema fixes joint reliability at 0.95. If the instructions cannot be expressed, say UNSUPPORTED.\n'+el('instructions').value;try{await navigator.clipboard.writeText(prompt);el('status').textContent='Prompt copied. Open ChatGPT, then paste its JSON response here.';}catch{el('json').value=prompt;el('status').textContent='Clipboard unavailable. Prompt placed in the text box for manual copying; replace it with ChatGPT JSON.';}};el('export').onclick=()=>{if(!last){el('status').textContent='Run a valid comparison first.';return;}download('pillar_component_evaluation.json',JSON.stringify(last,null,2),'application/json');};render();if(location.hash==='#evaluation')section.scrollIntoView();
+})();
+</script></body>
+</html>

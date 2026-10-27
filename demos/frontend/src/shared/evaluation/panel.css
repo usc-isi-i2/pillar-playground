@@ -1,0 +1,99 @@
+/* Colours are variables so a page with a dark theme can remap them (see replan.css). */
+#evaluation {
+  --ev-bg: #f4f8fb;
+  --ev-ink: #193248;
+  --ev-field: white;
+  --ev-field-border: #9bafbd;
+  --ev-rule: #ccd7df;
+  --ev-status: #e5f3f3;
+  --ev-muted: #50687a;
+  font:
+    16px/1.5 system-ui,
+    sans-serif;
+  background: var(--ev-bg);
+  color: var(--ev-ink);
+  padding: 40px clamp(16px, 5vw, 80px);
+  border-top: 3px solid #008987;
+  scroll-margin-top: 12px;
+}
+#evaluation * {
+  box-sizing: border-box;
+}
+#evaluation h2 {
+  font-size: 30px;
+  margin: 0 0 10px;
+}
+#evaluation h3 {
+  font-size: 20px;
+  margin: 24px 0 8px;
+}
+#evaluation label {
+  display: block;
+  margin: 10px 0;
+}
+#evaluation select,
+#evaluation input,
+#evaluation textarea {
+  font: inherit;
+  padding: 9px;
+  border: 1px solid var(--ev-field-border);
+  border-radius: 5px;
+  background: var(--ev-field);
+  color: var(--ev-ink);
+  max-width: 100%;
+}
+#evaluation textarea {
+  width: 100%;
+  min-height: 84px;
+}
+#evaluation button,
+#evaluation a.eval-btn {
+  display: inline-block;
+  font: inherit;
+  background: #007f82;
+  color: white;
+  border: 0;
+  padding: 10px 16px;
+  border-radius: 5px;
+  margin: 5px 8px 5px 0;
+  cursor: pointer;
+  text-decoration: none;
+}
+#evaluation table {
+  width: 100%;
+  border-collapse: collapse;
+  background: var(--ev-field);
+  font-size: 14px;
+}
+#evaluation th,
+#evaluation td {
+  padding: 10px;
+  text-align: left;
+  border-bottom: 1px solid var(--ev-rule);
+}
+#evaluation .eval-scroll {
+  overflow: auto;
+}
+#evaluation .eval-status {
+  padding: 12px;
+  background: var(--ev-status);
+}
+#evaluation .eval-grid {
+  display: grid;
+  grid-template-columns:
+    1fr
+    1fr;
+  gap: 32px;
+}
+#evaluation small {
+  display: block;
+  color: var(--ev-muted);
+}
+#evaluation pre {
+  white-space: pre-wrap;
+}
+@media (max-width: 800px) {
+  #evaluation .eval-grid {
+    grid-template-columns: 1fr;
+  }
+}

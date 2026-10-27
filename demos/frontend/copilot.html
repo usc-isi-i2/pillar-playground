@@ -1,0 +1,188 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width,initial-scale=1" />
+    <meta
+      name="description"
+      content="A PILLAR reference demo for decisions, correlated uncertainty, and checkable policy assurance."
+    />
+    <title>PILLAR · Circuit Copilot</title>
+    <script type="module" src="/src/copilot/main.ts"></script>
+  </head>
+  <body>
+    <header>
+      <div>
+        <h1>PILLAR <span>/ Circuit Copilot</span></h1>
+        <p>Prior knowledge → compiled model → checked decisions</p>
+      </div>
+      <div class="head-actions">
+        <span class="badge">CLARA · finite-model reference demo</span
+        ><button id="exportCase" class="small">Export result</button><a href="/download">Download app</a>
+      </div>
+    </header>
+    <div class="layout">
+      <aside>
+        <section>
+          <p class="eyebrow">01 / Knowledge</p>
+          <h2>Tell the agent the rules</h2>
+          <textarea id="knowledge" aria-label="Operational prior knowledge"></textarea>
+          <div class="row">
+            <button id="compileKnowledge" class="primary">Compile with ChatGPT</button
+            ><button id="resetKnowledge" class="small">Reset</button>
+          </div>
+          <p id="compileStatus" class="note">
+            The supported rules are shown in the model tab. Preset rules already run locally.
+          </p>
+        </section>
+        <section>
+          <p class="eyebrow">02 / Situation</p>
+          <h2>Evidence and resources</h2>
+          <div class="field">
+            <label for="scenario">Dependency model</label
+            ><select id="scenario">
+              <option value="demand">Demand uncertainty only</option>
+              <option value="storm">Storm links demand and late delivery</option>
+            </select>
+          </div>
+          <div class="field">
+            <label for="evidence">Observed regime</label
+            ><select id="evidence">
+              <option value="all">Not yet observed</option>
+              <option>Normal</option>
+              <option>Surge</option>
+              <option>Storm</option>
+            </select>
+          </div>
+          <div class="field">
+            <label for="capacityB">Depot B dispatch limit <b id="capacityBVal">50 units</b></label
+            ><input id="capacityB" type="range" min="0" max="130" step="1" value="50" />
+          </div>
+          <div class="field">
+            <label for="stormProbability">Storm probability <b id="stormProbabilityVal">30%</b></label
+            ><input id="stormProbability" type="range" min="0" max="100" step="1" value="30" />
+          </div>
+          <label class="check"
+            ><input id="backupEnabled" type="checkbox" /> Local backup can reach S4 before cutoff</label
+          >
+          <div class="params-grid">
+            <div class="field">
+              <label for="backupLimit">Backup limit (units)</label
+              ><input id="backupLimit" type="number" min="0" max="100" value="30" />
+            </div>
+            <div class="field">
+              <label for="backupCost">Backup cost / unit</label
+              ><input id="backupCost" type="number" min="0" max="1000" value="12" />
+            </div>
+          </div>
+          <p class="note">
+            Backup timing is a stated assumption. Other lanes are timely; A→S4 is late in the storm scenario.
+          </p>
+        </section>
+        <section>
+          <p class="eyebrow">03 / Assurance</p>
+          <h2>Set the policy</h2>
+          <div class="field">
+            <label for="service">Priority share of realized demand <b id="serviceVal">90%</b></label
+            ><input id="service" type="range" min="50" max="100" step="1" value="90" />
+          </div>
+          <div class="field">
+            <label for="tau">Required joint probability <b id="tauVal">95%</b></label
+            ><input id="tau" type="range" min="50" max="100" step="1" value="95" />
+          </div>
+          <label class="check"
+            ><input id="exceptionAuthorized" type="checkbox" /> Authorized exception: use an 80% service level</label
+          >
+          <p class="note">
+            This explicit authorization changes the policy. Weather evidence alone does not activate it.
+          </p>
+          <details>
+            <summary>Edit the complete typed model</summary>
+            <textarea id="specJson" rows="15" spellcheck="false" aria-label="Typed model JSON"></textarea>
+            <div class="row"><button id="applySpec" class="small">Apply typed model</button></div>
+            <p class="error" id="specError" role="alert"></p>
+          </details>
+        </section>
+      </aside>
+      <main>
+        <div class="intro">
+          <div>
+            <p class="eyebrow">Decision workspace</p>
+            <h2>What should we do now?</h2>
+            <p class="note">Choose an action while accounting for what you cannot yet observe.</p>
+          </div>
+        </div>
+        <div class="scenario-buttons">
+          <button data-preset="demand" aria-pressed="true">1 · Demand only</button
+          ><button data-preset="storm" aria-pressed="false">2 · Correlated storm</button
+          ><button data-preset="repair" aria-pressed="false">3 · Add backup supply</button>
+        </div>
+        <div class="tour">
+          <div class="label">
+            <strong id="tourTitle">Evaluator walkthrough</strong>
+            <p id="tourText">
+              Seven live steps: decision, explanation, policy change, disruption, repair, dependence, exception.
+            </p>
+          </div>
+          <button id="tourPrev" class="small" disabled>Back</button
+          ><button id="tourNext" class="small">Start tour</button>
+        </div>
+        <div class="ask">
+          <input
+            id="question"
+            placeholder="Ask for a plan, an explanation, or the backup needed…"
+            aria-label="Question for the agent"
+          /><button id="ask" class="primary">Ask agent</button><button id="chatgptAnswer">Ask ChatGPT</button>
+        </div>
+        <div class="chips">
+          <button data-query="What should I do now?">Recommend a plan</button
+          ><button data-query="Why not send 70 units to S4?">Why not 70?</button
+          ><button data-query="How much backup supply do we need?">Find minimum backup</button
+          ><button data-query="Compare joint and independent uncertainty">Test independence</button>
+        </div>
+        <article class="answer" id="answer" aria-live="polite">
+          <div class="answer-label">Checked decision</div>
+          <p id="answerText">Computing the reference plan…</p>
+          <div class="meta" id="answerMeta"></div>
+        </article>
+        <div class="cards">
+          <div class="metric">
+            <div class="label">Modeled policy compliance</div>
+            <div class="value" id="probability">—</div>
+            <div class="sub" id="probabilitySub">Both priority sites together</div>
+          </div>
+          <div class="metric">
+            <div class="label">Expected total cost</div>
+            <div class="value" id="totalCost">—</div>
+            <div class="sub" id="costSub">Transport + backup + expected shortfall</div>
+          </div>
+          <div class="metric">
+            <div class="label">Assurance result</div>
+            <div class="value" id="assurance" style="font-size: 21px">—</div>
+            <div class="sub" id="assuranceSub">Checked under the current finite model</div>
+          </div>
+        </div>
+        <section class="compare-panel">
+          <h2>Same model. Different decisions.</h2>
+          <p class="note">
+            Bars are evaluated by the compiled policy circuit. The vertical line is your required probability.
+          </p>
+          <div id="planComparison"></div>
+        </section>
+        <section class="network">
+          <h2>Supply network</h2>
+          <div id="network"></div>
+          <p class="note" id="networkCaption"></p>
+        </section>
+        <nav class="tabs" role="tablist" id="tabs"></nav>
+        <div id="tabBody" class="tabbody"></div>
+        <footer>
+          This is a working finite-domain arithmetic-circuit reference application with numerical LP search. Demand and
+          disruption probabilities are synthetic; quantities are divisible. No learned forecaster, neural policy, or
+          general-purpose logic compiler is connected. Assurance is relative to the stated model.
+          <span id="connectionState">ChatGPT handoff ready.</span>
+        </footer>
+      </main>
+    </div>
+  </body>
+</html>
