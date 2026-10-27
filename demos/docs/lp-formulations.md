@@ -184,8 +184,8 @@ and the page reports them as "relaxed".
 | Keys $`k = (s, c)`$ | Store $`s`$ and category $`c`$. Toy: S1–S4 with one category `units`. Storm: 10 stores × FOODS, HOUSEHOLD, HOBBIES = 30 keys |
 | Lanes $`\ell = (d, s)`$ | Toy: every DC to every store. Storm: every DC to every store, minus CA→TX when that lane is closed |
 | $`\kappa_\ell`$ | Lane cost per unit. Toy: A $`(1,2,5,6)`$, B $`(6,5,2,1)`$. Storm: in-state 1; cross-state CA–TX 4, CA–WI 6, TX–WI 4.5, each scaled by $`m/4`$ where $`m`$ = `crossStateMultiplier` (default 4) |
-| $`K_d`$ | DC capacity. Toy: 130, 50. Storm: $`\operatorname{round}(1.35 \cdot \sum_{\text{state}} \text{base mean})`$, times `txCap` (1, 0.7 or 0.4) for TX |
-| $`F_k`$ | Normal-week forecast. Toy: 50, 40, 45, 55. Storm: $`\operatorname{round}(\text{weekly}_s \cdot \text{share}_c)`$, FOODS × 1.06 in a SNAP week. A loaded CSV of M5 aggregates replaces $`\text{weekly}_s \cdot \text{share}_c`$ (and the cv) for the keys it lists |
+| $`K_d`$ | DC capacity. Toy: 130, 50. Storm: $`\mathrm{round}(1.35 \cdot \sum_{\text{state}} \text{base mean})`$, times `txCap` (1, 0.7 or 0.4) for TX |
+| $`F_k`$ | Normal-week forecast. Toy: 50, 40, 45, 55. Storm: $`\mathrm{round}(\text{weekly}_s \cdot \text{share}_c)`$, FOODS × 1.06 in a SNAP week. A loaded CSV of M5 aggregates replaces $`\text{weekly}_s \cdot \text{share}_c`$ (and the cv) for the keys it lists |
 | $`\phi`$ | Floor fraction (`floor.fraction`, 0.6), or 0 if no floor |
 | $`P`$, $`f_k`$ | Priority keys and their service fractions. Toy: S1, S4 at 0.9. Storm: TX_1–TX_3 FOODS at 0.9 |
 | $`\rho_k`$ | Shortage penalty: `penalties.priority` for $`k \in P`$, `penalties.other` otherwise |
@@ -206,7 +206,7 @@ Within a configuration, keys are independent.
   Given $`\kappa`$, each key has a five-point distribution with mean $`\mu_k`$:
   the base mean, raised in Texas by the surge (FOODS $`\times (1+g_u)`$, HOUSEHOLD
   $`\times (1+0.8 g_u)`$, HOBBIES $`\times (1-0.5 g_u)`$, with $`g = 0.04, 0.18, 0.38`$). Its atoms are
-  $`\operatorname{round}\!\big(\mu_k (1 + \text{cv}_c\, \zeta_i / \sigma)\big)`$ with probabilities
+  $`\mathrm{round}\big(\mu_k (1 + \text{cv}_c\, \zeta_i / \sigma)\big)`$ with probabilities
   $`(0.1, 0.2, 0.4, 0.2, 0.1)`$, where $`\zeta = (-1.6, -0.7, 0, 0.7, 1.6)`$ and
   $`\sigma = \sqrt{2(0.1 \cdot 2.56 + 0.2 \cdot 0.49)}`$. The exception rule lowers $`f_k`$ to
   $`\min(f_k, \text{exception fraction})`$ in configurations with an emergency.
