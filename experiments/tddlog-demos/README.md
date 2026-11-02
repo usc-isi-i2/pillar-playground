@@ -1,6 +1,6 @@
-# The two PILLAR demos with tddlog
+# The PILLAR demos with tddlog
 
-Both demos written as ProbLog programs, with [tddlog](https://github.com/Tractables/tddlog)
+Both demos, and the forecast comparison at the bottom of both pages, written as ProbLog programs, with [tddlog](https://github.com/Tractables/tddlog)
 computing every probability. The ported engines in `demos/backend` stay as they are; this
 experiment swaps their probability code for tddlog at run time and compares the results with the
 golden outputs captured from the original pages.
@@ -11,8 +11,9 @@ golden outputs captured from the original pages.
 |---|---|---|---|
 | Circuit Copilot | the three worlds and their priors, the observed world, the late A to S4 delivery in a storm, a plan's shipments, the priority rule | each world's posterior, each plan's probability that the rule holds, the storm-linked against independent delay | the LP per subset of worlds, the choice among them |
 | PILLAR Replan | the storm, and the surge, emergency, advisory, sales, TX capacity and lane status it influences; the operator's evidence; each store and category's five-point demand; the rule with the exception | the posterior and the evidence attribution, each store's demand distribution, the chance thresholds, a plan's probability that each and every priority store meets the rule | the shipment LP, the most-likely-world plan (tddlog has no MPE query), the sampled backtest |
+| Forecast comparison | the training days as the demand model: one certain day of means (point forecast), one random day shared by the three stores (joint), or one random day per store (independent); a store covers its demand when stock >= floor x demand | each store's coverage at every candidate stock level, its demand distribution (for the expected shortage), the probability all three cover for every stock combination that can still qualify | the search over stock combinations, the scoring on held-out days |
 
-`programs/*.pl` are example programs for each demo, with their queries. They are plain ProbLog,
+`programs/*.pl` are example programs for each demo and the forecast comparison, with their queries. They are plain ProbLog,
 so `tddlog programs/replan_storm.pl` or ProbLog itself can run them.
 
 ## Results
@@ -26,6 +27,7 @@ so `tddlog programs/replan_storm.pl` or ProbLog itself can run them.
 | Replan: the golden plans scored with tddlog's probabilities | 74/74 |
 | Replan: what each plan decides (chance thresholds, expected cost, probability the rule holds, what is relaxed) | 74/74 |
 | Replan: the whole output, value for value | 18/74 |
+| Forecast comparison: the 36 page runs and 20 random uploaded CSVs, whole output | 56/56 |
 
 The Replan outputs that differ value for value pick a different plan among equally cheap ones.
 tddlog's demand distributions agree with the engine's to the last bit or two (5e-17), since
@@ -37,7 +39,7 @@ capacity values near zero (about 1e-10) are not.
 ## Files
 
 - `problog_text.py`: numbers and names as ProbLog, and the tddlog call.
-- `copilot_tddlog.py`, `replan_tddlog.py`: each demo's program, its queries, and `Patched`, which
+- `copilot_tddlog.py`, `replan_tddlog.py`, `evaluation_tddlog.py`: each demo's program, its queries, and `Patched`, which
   points the engine's probability functions at tddlog for the length of a `with` block.
 - `compare.py`: the comparison above. `export_programs.py`: writes `programs/`.
 

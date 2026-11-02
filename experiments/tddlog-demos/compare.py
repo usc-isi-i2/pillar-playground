@@ -1,4 +1,4 @@
-"""Run both demos with tddlog answering every probability, and compare with the golden outputs
+"""Run both demos and their shared forecast comparison with tddlog answering every probability, and compare with the golden outputs
 captured from the original pages (demos/golden). Numbers must agree to 1e-9 (relative); every
 other value must be equal. Prints one line per suite and every mismatch."""
 
@@ -11,13 +11,15 @@ import time
 from pathlib import Path
 
 import copilot_tddlog as CT
+import evaluation_tddlog as ET
 import replan_tddlog as RT
 from problog_text import CALLS
 from pillar_demos import copilot as C
+from pillar_demos import evaluation as E
 from pillar_demos import replan as R
 
 GOLDEN = Path(__file__).resolve().parents[2] / "demos" / "golden"
-G = {name: json.loads((GOLDEN / f"{name}.json").read_text()) for name in ("copilot", "replan", "random")}
+G = {name: json.loads((GOLDEN / f"{name}.json").read_text()) for name in ("copilot", "replan", "random", "evaluation")}
 
 
 def plain(v):
@@ -153,6 +155,13 @@ def main():
     t = time.perf_counter()
     cases = list(G["replan"]["cases"].items()) + [(i, c) for i, c in enumerate(G["random"]["replan"])]
     report("Replan: posterior and attribution", [(n, posterior_case(c["input"], c["output"])) for n, c in cases], t)
+    with ET.Patched():
+        t = time.perf_counter()
+        report("Forecast comparison: page runs", [(n, diff(plain(E.run(E.synthetic(c["input"]["dataset"]), c["input"]["rules"], c["input"]["capacity"], c["input"]["dependence"])), c["output"]))
+                                                  for n, c in G["evaluation"]["runs"].items()], t)
+        t = time.perf_counter()
+        report("Forecast comparison: random CSVs", [(i, diff(plain(E.run(E.parse(c["input"]["csv"]), c["input"]["rules"], c["input"]["capacity"], c["input"]["dependence"])), c["output"]))
+                                                    for i, c in enumerate(G["random"]["evaluation"])], t)
     print(f"tddlog runs: {CALLS['n']}")
 
 

@@ -7,8 +7,10 @@ from __future__ import annotations
 from pathlib import Path
 
 import copilot_tddlog as CT
+import evaluation_tddlog as ET
 import replan_tddlog as RT
 from pillar_demos import copilot as C
+from pillar_demos import evaluation as E
 from pillar_demos import replan as R
 
 OUT = Path(__file__).resolve().parent / "programs"
@@ -42,6 +44,19 @@ def main() -> None:
         write(f"replan_{preset}", f"PILLAR Replan, {preset} preset, default rules and evidence. recv/2 gives each\n"
               "priority store its chance threshold; met/1 and all_met are the rule's probabilities there.",
               prog.text + queries)
+    # Forecast comparison: the correlated synthetic data, joint dependence, reference rules,
+    # asked at the stock levels the page picks with capacity 240.
+    f = E.fit(E.synthetic("correlated"))
+    samples = [r["x"] for r in f["train"]]
+    x = [57, 81, 95]
+    write("forecast_joint", "Forecast comparison: the 56 correlated training days, all three stores covering 90% of\n"
+          "demand together. all_cover(57, 81, 95) is the probability at the stock levels the page picks.",
+          ET.program(samples, 0.9, False) + [
+              *(f"level({j}, {v})." for j, v in enumerate(x)),
+              f"combo({x[0]}, {x[1]}, {x[2]}).",
+              *(f"query(cover({j}, {v}))." for j, v in enumerate(x)),
+              f"query(all_cover({x[0]}, {x[1]}, {x[2]})).",
+          ])
     print("wrote", ", ".join(sorted(f.name for f in OUT.glob("*.pl"))))
 
 

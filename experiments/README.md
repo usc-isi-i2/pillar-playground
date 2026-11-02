@@ -8,7 +8,7 @@ pages' captured outputs, or ProbLog.
 | Folder | What it does | Result |
 |---|---|---|
 | [`lp-to-tididi/`](lp-to-tididi/) | Compiles linear and mixed-integer programs into tididi circuits and finds the cheapest plan on the circuit. `compile.py` builds the Copilot, Replan toy and stocking models by hand; `compile_lp.py` reads any `.mps` file (bound and cost tightening, helper variables folded into costs, vtrees from goatd tree decompositions and bisection, scored and raced); `m5_export.py` exports M5-CLARA's planners as `.mps` | Matches HiGHS on every Copilot, Replan toy and stocking model. Refuses the Replan storm LPs (about 972,000 yes/no variables) and M5-CLARA (about 18,700) |
-| [`tddlog-demos/`](tddlog-demos/) | Writes both demos as ProbLog programs and has [tddlog](https://github.com/Tractables/tddlog) compute every probability; the LP still picks the shipments. See its [README](tddlog-demos/README.md) | Matches the original pages on every Copilot case and on every Replan decision (74/74); tddlog agrees with ProbLog to 8e-15 on 15,264 queries |
+| [`tddlog-demos/`](tddlog-demos/) | Writes both demos and their shared forecast comparison as ProbLog programs and has [tddlog](https://github.com/Tractables/tddlog) compute every probability; the LP and the stock search still choose. See its [README](tddlog-demos/README.md) | Matches the original pages on every Copilot case, every Replan decision (74/74) and every forecast comparison run (56/56); tddlog agrees with ProbLog to 8e-15 on 15,264 queries |
 
 `lp-to-tididi/probe.py` and `small.py` are early size probes from before the out-of-memory fix,
 kept for the record.
