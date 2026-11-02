@@ -14,23 +14,26 @@ uses them to choose the plan. Replan, step by step:
 flowchart TD
     IN["<b>Input</b> (Python dicts, as the page sends them)<br/>preset_id: 'storm'<br/>spec: the manager's rules (priority stores, 90% service, tau, floor, penalties)<br/>ev: the evidence (advisory 'watch', TX capacity 0.7, lane open, ...)"]
     PRESET["<b>Fixed model numbers</b><br/>pillar_demos.replan.PRESETS['storm']<br/>(storm odds, surge tables, demand means, costs)"]
-    GEN["<b>Writes the ProbLog</b><br/>replan_tddlog.Program<br/>Python code (written by Claude, translating the demo's own logic)<br/>fills each line from the input and the preset"]
-    TEXT["<b>ProbLog program, as text in memory</b><br/>storm and its effects, evidence, 30 demand choices, the rule<br/>+ the question: query(z(_)), query(met_at(K, Q)), query(all_met), ..."]
-    TDD["<b>Computes the probabilities</b><br/>tddlog.solve(text), called in problog_text.solve<br/>(compiles the program into tididi circuits, exact answers)"]
-    ANS["<b>Answers</b> (Python dict)<br/>z(graze): 0.819, ..., all_met: 0.963"]
-    LP["<b>Chooses the shipments</b><br/>the demo's LP (pillar_demos.lp.solve_lp)<br/>fed tddlog's demand distributions and chance thresholds"]
+    GEN1["<b>1. Write the ProbLog model</b><br/>replan_tddlog.Program: Python code (written by Claude from the demo's own logic)<br/>storm and its effects, evidence, 30 demand choices, the rule<br/>+ questions: storm odds, demand distributions, rule chance at candidate amounts"]
+    TDD1["<b>2. tddlog computes</b><br/>tddlog.solve(text)<br/>odds, demand distributions, chance thresholds"]
+    LP["<b>3. The LP chooses the shipments</b><br/>pillar_demos.lp.solve_lp, unchanged<br/>uses tddlog's demand distributions and thresholds"]
+    GEN2["<b>4. Same model + the chosen plan</b><br/>the plan's amounts as recv(K, Q) facts<br/>+ question: does each store, and all of them, meet the rule?"]
+    TDD2["<b>5. tddlog computes</b><br/>tddlog.solve(text)<br/>chance the plan meets the rule: 0.963"]
     OUT["<b>Output</b>: the same JSON the page shows<br/>plans, expected cost, chance the rule holds"]
     DUMP[("TDDLOG_DUMP folder<br/>each program + its answers, for review")]
 
-    IN --> GEN
-    PRESET --> GEN
-    GEN --> TEXT --> TDD --> ANS
-    ANS -- "odds, demand distributions, thresholds" --> LP
-    LP -- "a plan's amounts, as recv(K, Q) facts" --> GEN
-    ANS -- "chance the plan meets the rule" --> OUT
-    LP --> OUT
-    TEXT -. "optional copy" .-> DUMP
+    IN --> GEN1
+    PRESET --> GEN1
+    GEN1 --> TDD1 --> LP --> GEN2 --> TDD2 --> OUT
+    GEN1 -. "optional copy" .-> DUMP
+    GEN2 -. "optional copy" .-> DUMP
 ```
+
+Steps 4 and 5 run once per plan the page scores, not in a loop: the range plan, the
+most-likely-week plan, the re-solves that value one more unit of capacity at each DC, and the
+lane-closure check. Scoring one plan can take a few programs (the engine asks for each store's
+chance and for all of them together), so the dump holds more step 4 programs than plans. Nothing
+goes back to the LP after step 5.
 
 | Question | Answer |
 |---|---|
