@@ -2,6 +2,8 @@
 
 from __future__ import annotations
 
+import hashlib
+import os
 import sys
 from pathlib import Path
 
@@ -11,6 +13,11 @@ import tddlog
 sys.path.insert(0, str(Path(__file__).resolve().parents[2] / "demos" / "backend" / "src"))
 
 CALLS = {"n": 0}  # how many tddlog runs, for the report
+
+# TDDLOG_DUMP=<folder> writes every program sent to tddlog to that folder, for review: named by
+# what it asks and a hash of its text (an identical program is written once), with tddlog's
+# answers appended as comments. Off by default; a full compare.py builds over 12,000 programs.
+DUMP = Path(os.environ["TDDLOG_DUMP"]) if os.environ.get("TDDLOG_DUMP") else None
 
 
 def num(v: float) -> str:
@@ -33,7 +40,17 @@ def atom(name: str) -> str:
     return out if out[:1].isalpha() else "k_" + out
 
 
-def solve(program: str) -> dict[str, float] | None:
-    """Every query's probability given the evidence; None when the evidence is impossible."""
+def solve(program: str, label: str) -> dict[str, float] | None:
+    """Every query's probability given the evidence; None when the evidence is impossible.
+    label names the question (e.g. replan-storm-posterior) for the TDDLOG_DUMP file."""
     CALLS["n"] += 1
-    return tddlog.solve(program).answers
+    answers = tddlog.solve(program).answers
+    if DUMP is not None:
+        path = DUMP / f"{label}-{hashlib.sha1(program.encode()).hexdigest()[:8]}.pl"
+        if not path.exists():
+            DUMP.mkdir(parents=True, exist_ok=True)
+            result = (["% tddlog: the evidence is impossible."] if answers is None else
+                      [f"%   {q} = {p!r}" for q, p in answers.items()])
+            path.write_text(f"% {label}: the program as sent to tddlog.\n\n{program}\n\n% tddlog's answers:\n"
+                            + "\n".join(result) + "\n")
+    return answers

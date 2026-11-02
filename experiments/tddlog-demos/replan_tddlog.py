@@ -54,6 +54,7 @@ class Program:
         overrides = overrides or {}
         P = R.PRESETS[preset_id]
         self.storm = preset_id == "storm"
+        self.label = f"replan-{preset_id}"
         stores, cats = [s["id"] for s in P["stores"]], list(P["cats"])
         self.keys = [s + "|" + c for s in stores for c in cats]
         self.name = {k: atom(k) for k in self.keys}
@@ -132,10 +133,10 @@ class Program:
         self.text = lines
         self._answers: dict[str, dict[str, float]] = {}
 
-    def ask(self, extra: list[str]) -> dict[str, float]:
+    def ask(self, extra: list[str], question: str) -> dict[str, float]:
         program = "\n".join(self.text + extra)
         if program not in self._answers:
-            answers = solve(program)
+            answers = solve(program, f"{self.label}-{question}")
             if answers is None:
                 raise ValueError("The evidence has zero probability under this model.")
             self._answers[program] = answers
@@ -144,13 +145,13 @@ class Program:
     # ---------- the queries
 
     def posterior(self) -> dict[str, Any]:
-        a = self.ask(["query(z(_)).", "query(u(_)).", "query(emerg)."])
+        a = self.ask(["query(z(_)).", "query(u(_)).", "query(emerg)."], "posterior")
         return {"z": [a.get(f"z({z})", 0.0) for z in Z], "u": [a.get(f"u({u})", 0.0) for u in U],
                 "e": a.get("emerg", 0.0)}
 
     def marginals(self) -> dict[str, list[list[float]]]:
         """Each key's demand distribution, as build_model's M["marg"]: [value, probability] by value."""
-        a = self.ask([f"query(demand({self.name[k]}, _))." for k in self.keys])
+        a = self.ask([f"query(demand({self.name[k]}, _))." for k in self.keys], "demand")
         return {k: [[v, a[f"demand({self.name[k]},{num(v)})"]] for v in sorted(self.values[k])
                     if a.get(f"demand({self.name[k]},{num(v)})", 0.0) > 1e-15] for k in self.keys}
 
@@ -163,7 +164,8 @@ class Program:
         values = [v for v, _ in self.marginals()[key]]
         cands = sorted({v * f for v in values for f in fracs})
         n = self.name[key]
-        a = self.ask([f"cand({n}, {num(q)})." for q in cands] + [f"query(met_at({n}, {num(q)}))." for q in cands])
+        a = self.ask([f"cand({n}, {num(q)})." for q in cands] + [f"query(met_at({n}, {num(q)}))." for q in cands],
+                     f"threshold-{n}")
         for q in cands:
             if a.get(f"met_at({n},{num(q)})", 0.0) >= tau - 1e-12:
                 return q
@@ -174,7 +176,7 @@ class Program:
         names = [self.name[k] for k in self.prio]
         a = self.ask([f"recv({self.name[k]}, {num(q[k])})." for k in self.prio]
                      + ["all_met :- " + ", ".join(f"met({n})" for n in names) + "."]
-                     + [f"query(met({n}))." for n in names] + ["query(all_met)."])
+                     + [f"query(met({n}))." for n in names] + ["query(all_met)."], "plan")
         out = {k: a.get(f"met({self.name[k]})", 0.0) for k in self.prio}
         out["*all*"] = a.get("all_met", 0.0)
         return out
@@ -206,3 +208,27 @@ class Patched:
 
     def __exit__(self, *exc):
         R.build_model, R._chance_threshold, R._p_rule_met, R._p_all_met = self.saved
+
+
+if __name__ == "__main__":
+    # python replan_tddlog.py [toy|storm]: print the program for the preset's default rules and
+    # evidence, with the posterior and plan questions, then tddlog's answers.
+    import sys
+
+    preset = sys.argv[1] if len(sys.argv) > 1 else "storm"
+    spec = {**R.PRESETS[preset]["defaultSpec"]}
+    spec["tau"] = spec["tau"] or 0.9
+    prog = Program(preset, spec, R.DEFAULT_EVIDENCE)
+    tau_each = 1 - (1 - spec["tau"]) / len(prog.prio) if spec.get("joint") and len(prog.prio) > 1 else spec["tau"]
+    q = {k: prog.threshold(k, tau_each) for k in prog.prio}
+    names = [prog.name[k] for k in prog.prio]
+    extra = (["query(z(_)).", "query(u(_)).", "query(emerg)."] if prog.storm else []) + [
+        *(f"recv({prog.name[k]}, {num(v)})." for k, v in q.items()),
+        "all_met :- " + ", ".join(f"met({n})" for n in names) + ".",
+        *(f"query(met({n}))." for n in names),
+        "query(all_met).",
+    ]
+    print("\n".join(prog.text + extra))
+    print("\n% tddlog's answers:")
+    for query, p in prog.ask(extra, "main").items():
+        print(f"%   {query} = {p:.6f}")

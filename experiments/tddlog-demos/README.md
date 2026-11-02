@@ -5,6 +5,42 @@ computing every probability. The ported engines in `demos/backend` stay as they 
 experiment swaps their probability code for tddlog at run time and compares the results with the
 golden outputs captured from the original pages.
 
+## How it works
+
+Python code writes the ProbLog program, tddlog computes the probabilities, and the demo's LP
+uses them to choose the plan. Replan, step by step:
+
+```mermaid
+flowchart TD
+    IN["<b>Input</b> (Python dicts, as the page sends them)<br/>preset_id: 'storm'<br/>spec: the manager's rules (priority stores, 90% service, tau, floor, penalties)<br/>ev: the evidence (advisory 'watch', TX capacity 0.7, lane open, ...)"]
+    PRESET["<b>Fixed model numbers</b><br/>pillar_demos.replan.PRESETS['storm']<br/>(storm odds, surge tables, demand means, costs)"]
+    GEN["<b>Writes the ProbLog</b><br/>replan_tddlog.Program<br/>Python code (written by Claude, translating the demo's own logic)<br/>fills each line from the input and the preset"]
+    TEXT["<b>ProbLog program, as text in memory</b><br/>storm and its effects, evidence, 30 demand choices, the rule<br/>+ the question: query(z(_)), query(met_at(K, Q)), query(all_met), ..."]
+    TDD["<b>Computes the probabilities</b><br/>tddlog.solve(text), called in problog_text.solve<br/>(compiles the program into tididi circuits, exact answers)"]
+    ANS["<b>Answers</b> (Python dict)<br/>z(graze): 0.819, ..., all_met: 0.963"]
+    LP["<b>Chooses the shipments</b><br/>the demo's LP (pillar_demos.lp.solve_lp)<br/>fed tddlog's demand distributions and chance thresholds"]
+    OUT["<b>Output</b>: the same JSON the page shows<br/>plans, expected cost, chance the rule holds"]
+    DUMP[("TDDLOG_DUMP folder<br/>each program + its answers, for review")]
+
+    IN --> GEN
+    PRESET --> GEN
+    GEN --> TEXT --> TDD --> ANS
+    ANS -- "odds, demand distributions, thresholds" --> LP
+    LP -- "a plan's amounts, as recv(K, Q) facts" --> GEN
+    ANS -- "chance the plan meets the rule" --> OUT
+    LP --> OUT
+    TEXT -. "optional copy" .-> DUMP
+```
+
+| Question | Answer |
+|---|---|
+| What is the input? | For Replan: `preset_id` (toy or storm), `spec` (the manager's rules, as ChatGPT turns them into settings) and `ev` (the evidence), the same three dictionaries the page sends to the engine. In `compare.py` they come from each recorded case in `demos/golden`; `replan_tddlog.py storm` uses the defaults. The fixed numbers of the model come from the demo's `PRESETS` table. |
+| Who writes the ProbLog? | Python code in this folder: `Program` in `replan_tddlog.py` (likewise `model` in `copilot_tddlog.py`, `program` in `evaluation_tddlog.py`). Claude wrote that code by translating the demos' own JavaScript logic; it was checked against the original pages' outputs and against ProbLog, but not reviewed by a domain expert. No `.pl` file is read; the program is built as text for each input. |
+| Who computes the probabilities? | tddlog, through one call: `tddlog.solve(text)` in `problog_text.solve`. Nothing else computes a probability while `Patched` is active. |
+| Who chooses the plan? | The demo's own code, unchanged: the shipment LP (Replan), the LP per subset of worlds (Copilot), the search over stock levels (forecast comparison). They ask tddlog for the probabilities they need. |
+| How does the engine use it? | `Patched` swaps the engine's probability functions (`build_model`'s demand distributions, `_chance_threshold`, `_p_rule_met`, `_p_all_met`) for ones that ask tddlog, for the length of a `with` block. The demo code in `demos/` is not edited. |
+| How do I see a program? | `python replan_tddlog.py storm` prints the storm program and tddlog's answers; `TDDLOG_DUMP=<folder>` saves every program a run builds; `review_run.py` does that for one scenario of each demo. |
+
 ## What is ProbLog, and what stays as it was
 
 | Demo | Written as ProbLog | tddlog answers | Unchanged |
@@ -36,12 +72,35 @@ the LP has several optimal plans, which one it ends on. The plan's cost and its 
 meeting the rule are the same, as the decision row shows; the shipments, iteration counts and
 capacity values near zero (about 1e-10) are not.
 
+## Reviewing the programs
+
+The code builds each ProbLog program as text and passes it to tddlog; it never reads a `.pl` file.
+To see exactly what was built, set `TDDLOG_DUMP=<folder>`: every program sent to tddlog is also
+written there, named by the question it asks (`replan-storm-posterior-<hash>.pl`), with tddlog's
+answers appended as comments. `review_run.py` does this for one scenario of each demo (Replan's
+default storm, Copilot's storm scenario, the forecast comparison at capacity 240) and writes the
+26 programs that run builds to `programs/review/`:
+
+| Files | The question |
+|---|---|
+| `replan-storm-posterior` | odds of the storm, surge and emergency given the evidence |
+| `replan-storm-demand` | each store and category's demand distribution |
+| `replan-storm-threshold-<store>` | the rule's probability at each candidate amount for that store |
+| `replan-storm-plan` | for a plan's amounts, the chance each priority store, and all of them, meet the rule |
+| `copilot-storm-worlds`, `copilot-storm-plan` | world odds; a plan's chance that the rule holds |
+| `forecast-coverage`, `forecast-joint` | each store's coverage per stock level and its demand; all three covering together |
+
+`programs/*.pl` (outside `review/`) are hand-picked examples written by `export_programs.py`.
+
 ## Files
 
 - `problog_text.py`: numbers and names as ProbLog, and the tddlog call.
 - `copilot_tddlog.py`, `replan_tddlog.py`, `evaluation_tddlog.py`: each demo's program, its queries, and `Patched`, which
   points the engine's probability functions at tddlog for the length of a `with` block.
-- `compare.py`: the comparison above. `export_programs.py`: writes `programs/`.
+  `python replan_tddlog.py storm` (or `toy`) prints the program for the default rules and
+  evidence, and tddlog's answers.
+- `compare.py`: the comparison above. `export_programs.py`: writes the examples in `programs/`.
+  `review_run.py`: writes every program one run builds to `programs/review/`.
 
 ## Running
 

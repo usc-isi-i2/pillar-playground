@@ -60,14 +60,14 @@ def plan_facts(i: int, x: list[float]) -> list[str]:
 
 
 def world_weights(c: dict[str, Any], p: dict[str, Any]) -> list[float]:
-    answers = solve("\n".join(model(p) + ["query(world(_))."]))
+    answers = solve("\n".join(model(p) + ["query(world(_))."]), f"copilot-{p['scenario']}-worlds")
     if answers is None:
         raise C.ValidationError("The selected evidence has zero probability under this model.")
     return [answers.get(f"world({atom(w)})", 0.0) for w in WORLDS]
 
 
 def evaluate(c: dict[str, Any], x: list[float], p: dict[str, Any]) -> dict[str, Any]:
-    answers = solve("\n".join(model(p) + plan_facts(0, x) + ["query(holds(p0))."]))
+    answers = solve("\n".join(model(p) + plan_facts(0, x) + ["query(holds(p0))."]), f"copilot-{p['scenario']}-plan")
     if answers is None:
         raise C.ValidationError("Evidence has zero probability.")
     return {"probability": answers["holds(p0)"], "values": []}
@@ -86,7 +86,7 @@ def independence_contrast() -> dict[str, Any]:
         "a_s4(0) :- \\+ timely.",
         "holds :- d(D), a_s4(A), 50 + 13 + A >= 0.9 * D - 1.0e-7.",
         "query(holds).",
-    ]))["holds"]
+    ]), "copilot-independent-delay")["holds"]
     return {"x": x, "joint": joint, "independent": independent,
             "failureJoint": 1 - joint, "failureIndependent": 1 - independent}
 

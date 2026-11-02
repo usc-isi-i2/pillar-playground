@@ -69,7 +69,7 @@ def solve(f: dict[str, Any], rules: dict[str, Any], uncertain: bool, capacity: f
 
     # 1. Each store's coverage at each level, and its demand distribution.
     a1 = run("\n".join(base + facts + [f"query(cover({j}, {num(a)}))." for j in range(3) for a in levels[j]]
-                       + [f"query(demand({j}, _))." for j in range(3)]))
+                       + [f"query(demand({j}, _))." for j in range(3)]), "forecast-coverage")
     cover = [{a: a1.get(f"cover({j},{num(a)})", 0.0) for a in levels[j]} for j in range(3)]
     demand = [{float(k[len(f"demand({j},"):-1]): p for k, p in a1.items() if k.startswith(f"demand({j},")}
               for j in range(3)]
@@ -86,7 +86,7 @@ def solve(f: dict[str, Any], rules: dict[str, Any], uncertain: bool, capacity: f
                 combos.add((a, b, fits[-1]))
     combos = sorted(combos)
     a2 = run("\n".join(base + facts + [f"combo({num(a)}, {num(b)}, {num(c)})." for a, b, c in combos]
-                       + [f"query(all_cover({num(a)}, {num(b)}, {num(c)}))." for a, b, c in combos]))
+                       + [f"query(all_cover({num(a)}, {num(b)}, {num(c)}))." for a, b, c in combos]), "forecast-joint")
     joint = {t: a2.get(f"all_cover({num(t[0])},{num(t[1])},{num(t[2])})", 0.0) for t in combos}
     max_p = max(joint.values(), default=0.0)
 
